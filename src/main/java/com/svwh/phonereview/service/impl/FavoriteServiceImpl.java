@@ -66,10 +66,10 @@ public class FavoriteServiceImpl implements FavoriteService {
         // 获取评论
         Comment comment = commentMapper.selectById(bo.getTargetId());
         User user = userMapper.selectById(userId);
-        notificationBo.setUserId(userId);
+        notificationBo.setUserId(comment.getUserId());
         notificationBo.setType("comment_like");
         notificationBo.setTitle("您的评论被点赞了");
-        notificationBo.setContent("用户 <b>" + user.getNickname() + "</b> 点赞了您的评论"+ "<b>" + comment.getContent().substring(Math.max(10,comment.getContent().length())) + "</b>");
+        notificationBo.setContent("用户 <b>" + user.getNickname() + "</b> 点赞了您的评论"+ "<b>" + comment.getContent().substring(Math.min(10,comment.getContent().length())) + "</b>");
         notificationBo.setLink("/review/"+comment.getPostId());
         notificationService.add(notificationBo);
     }

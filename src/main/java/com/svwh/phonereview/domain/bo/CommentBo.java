@@ -29,6 +29,8 @@ public class CommentBo {
 
     private Long parentId;
 
+    private Long rootId;
+
     private LocalDateTime createTime;
 
     @NotBlank(message = "内容不能为空",groups = {AddGroup.class})
@@ -44,4 +46,11 @@ public class CommentBo {
      * 关键词搜索.
      */
     private String keyword;
+
+    /**
+     * 拒绝原因
+     */
+    private String reason;
+
+    private Boolean notifyUser;
 }

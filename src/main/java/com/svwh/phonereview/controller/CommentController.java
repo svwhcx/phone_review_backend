@@ -2,6 +2,7 @@ package com.svwh.phonereview.controller;
 
 import com.svwh.phonereview.domain.bo.CommentBo;
 import com.svwh.phonereview.domain.vo.CommentVo;
+import com.svwh.phonereview.permission.annotation.CheckPermission;
 import com.svwh.phonereview.query.PageQuery;
 import com.svwh.phonereview.query.PageVo;
 import com.svwh.phonereview.service.CommentService;
@@ -29,6 +30,7 @@ public class CommentController {
      * @return
      */
     @GetMapping("/admin/list")
+    @CheckPermission
     public PageVo<CommentVo> listAdmin(CommentBo bo, PageQuery pageQuery){
         return commentService.adminList(bo,pageQuery);
     }
@@ -39,6 +41,7 @@ public class CommentController {
      * @param commentId
      */
     @DeleteMapping("/admin/{commentId}")
+    @CheckPermission
     public void delete(@PathVariable Long commentId){
         CommentBo bo = new CommentBo();
         bo.setId(commentId);
@@ -51,6 +54,7 @@ public class CommentController {
      * @param bo
      */
     @PutMapping("/admin/{commentId}/status")
+    @CheckPermission
     public void updateStatus(@PathVariable Long commentId,@RequestBody CommentBo bo){
         bo.setId(commentId);
         commentService.updateStatus(bo);

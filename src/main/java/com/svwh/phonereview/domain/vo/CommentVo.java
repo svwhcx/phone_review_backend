@@ -1,15 +1,13 @@
 package com.svwh.phonereview.domain.vo;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.svwh.phonereview.domain.entity.Comment;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @description 用户堆评测的评论
@@ -53,4 +51,40 @@ public class CommentVo  {
 
     private String status;
 
+    private String username;
+
+    private String nickname;
+
+    private String userAvatar;
+
+    private Long rootId;
+
+
+    /**
+     * 二级评论列表
+     */
+    private List<CommentVo> replies;
+
+    /**
+     * 回复的用户的头像
+     */
+    private String replyUserAvatar;
+
+    private String replyUserNickname;
+
+    private String replyUserUsername;
+
+    private String replyTo;
+
+    private Long replyToUserId;
+
+    /**
+     * 当前评论的点赞量
+     */
+    private Long likes;
+
+    /**
+     * 当前用户是否点赞了
+     */
+    private Boolean isLiked;
 }
