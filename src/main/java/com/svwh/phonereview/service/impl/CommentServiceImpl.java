@@ -56,6 +56,7 @@ public class CommentServiceImpl implements CommentService {
     public PageVo<CommentVo> listComments(Long postId, PageQuery pageQuery) {
         LambdaQueryWrapper<Comment> cLqw = Wrappers.lambdaQuery();
         cLqw.eq(Comment::getIsDelete, false)
+                .isNull(Comment::getParentId)
                 .eq(Comment::getStatus, CommentConstant.APPROVED)
                 .orderByDesc(Comment::getCreateTime);
         cLqw.eq(Comment::getPostId, postId);
@@ -66,9 +67,11 @@ public class CommentServiceImpl implements CommentService {
         if (records == null || records.isEmpty()) {
             return commentVoPageVo;
         }
-        List<Long> roodIds = records.stream().map(CommentVo::getRootId).toList();
+        List<Long> roodIds = records.stream().map(CommentVo::getId).toList();
         LambdaQueryWrapper<Comment> cLqw1 = Wrappers.lambdaQuery();
         cLqw1.in(Comment::getRootId, roodIds)
+                .eq(Comment::getIsDelete,false)
+                .eq(Comment::getStatus, CommentConstant.APPROVED)
                 .orderByAsc(Comment::getCreateTime);
         List<CommentVo> twoCommentVos = commentMapper.selectVoList(cLqw1);
         // 现在来组装二级评论
