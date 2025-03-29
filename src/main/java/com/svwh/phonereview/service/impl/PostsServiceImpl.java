@@ -104,6 +104,7 @@ public class PostsServiceImpl implements PostsService {
         // 评论数
         LambdaQueryWrapper<Comment> cLqw = Wrappers.lambdaQuery();
         cLqw.eq(Comment::getPostId, id)
+                .eq(Comment::getIsDelete, false)
                 .eq(Comment::getStatus, CommentConstant.APPROVED);
         Long count = commentMapper.selectCount(cLqw);
         // 组装数据,同时验证用户当前是否点赞或者是否收藏
