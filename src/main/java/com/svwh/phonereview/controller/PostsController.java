@@ -71,6 +71,7 @@ public class PostsController {
      * @return
      */
     @GetMapping("/{id}")
+    @IgnoreAuth
     public PostsVo get(@NotNull @PathVariable Long id){
         return postsService.get(id);
     }
@@ -167,6 +168,7 @@ public class PostsController {
      * @return
      */
     @GetMapping("/{postId}/comments")
+    @IgnoreAuth
     public PageVo<CommentVo> listComments(@PathVariable Long postId, PageQuery pageQuery){
         return commentService.listComments(postId,pageQuery);
     }
@@ -251,5 +253,18 @@ public class PostsController {
     public void updateStatus(@PathVariable Long postId,@RequestBody PostsBo bo){
         bo.setId(postId);
         postsService.adminUpdate(bo);
+    }
+
+    /**
+     * 管理员分页查看一个评测的评论列表
+     * @param postId
+     * @param pageQuery
+     * @return
+     */
+    @GetMapping("/admin/{postId}/comments")
+    public PageVo<CommentVo> adminListComments(@PathVariable Long postId,PageQuery pageQuery){
+        CommentBo bo = new CommentBo();
+        bo.setPostId(postId);
+        return commentService.listComments(postId,pageQuery);
     }
 }

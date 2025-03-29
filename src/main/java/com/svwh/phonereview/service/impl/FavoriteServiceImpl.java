@@ -86,7 +86,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         NotificationBo notificationBo = new NotificationBo();
         notificationBo.setTitle("您的评测被点赞了");
         notificationBo.setLink("/review/"+posts.getId());
-        notificationBo.setUserId(userId);
+        notificationBo.setUserId(posts.getUserId());
         notificationBo.setContent("用户 <b>" + user.getNickname()+"</b> 点赞了您的评测 " + posts.getTitle());
         notificationBo.setType("post_like");
         notificationService.add(notificationBo);
@@ -95,14 +95,14 @@ public class FavoriteServiceImpl implements FavoriteService {
     @Override
     public void addPostFavorite(FavoriteBo bo) {
         // 用户收藏一个评测
-        bo.buildLikePost();
+        bo.buildFavoritePost();
         add(bo);
     }
 
     @Override
     public void delete(FavoriteBo bo) {
         LambdaQueryWrapper<Favorite> fLqw = buildQuery(bo);
-        favoriteMapper.deleteById(fLqw);
+        favoriteMapper.delete(fLqw);
     }
 
 

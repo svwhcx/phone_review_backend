@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
         PageVo<CommentVo> commentVoPageVo = commentMapper.selectVoPage(pageQuery.buildMybatisPage(), cLqw);
         // 配置评论信息
         // TODO
-        return null;
+        return commentVoPageVo;
     }
 
     @Override

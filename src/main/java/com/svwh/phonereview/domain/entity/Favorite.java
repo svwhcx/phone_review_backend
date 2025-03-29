@@ -41,9 +41,5 @@ public class Favorite {
      */
     private Integer type;
 
-    /**
-     * 评论id
-     */
-    private Long commentId;
 
 }

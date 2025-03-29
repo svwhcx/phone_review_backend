@@ -38,7 +38,8 @@ public enum DefaultErrorCode implements IErrorCode{
     EXIST_LIKE_POST(1022, "您已点赞过该评测"),
     EXIST_LIKE_COMMENT(1023, "您已点赞过该评论"),
     USER_IS_MUTED(1024, "您已被禁言"),
-    IMAGE_TOO_LARGE(1025,"图片不得超过5M")
+    IMAGE_TOO_LARGE(1025,"图片不得超过5M"),
+    POSTS_REJECTED(1026,"该评测已被屏蔽查看"),
     ;
 
 

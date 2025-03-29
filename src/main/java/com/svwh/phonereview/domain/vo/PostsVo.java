@@ -131,9 +131,36 @@ public class PostsVo  {
 
     private String username;
 
+    private String nickname;
+
     private String brand;
 
     private String phoneModel;
 
     private List<String> fileList;
+
+    /**
+     * 当前用户是否收藏了
+     */
+    private Boolean isFavorited;
+
+    /**
+     * 当前用户是否点赞了
+     */
+    private Boolean isLiked;
+
+    /**
+     * 点赞数量
+     */
+    private Long likeCount;
+
+    /**
+     * 收藏数量
+     */
+    private Long favoriteCount;
+
+    /**
+     * 评论数量
+     */
+    private Long comments;
 }

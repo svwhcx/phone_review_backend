@@ -1,6 +1,7 @@
 package com.svwh.phonereview.domain.bo;
 
 import com.svwh.phonereview.domain.entity.Brand;
+import com.svwh.phonereview.domain.entity.Posts;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
@@ -14,7 +15,7 @@ import java.util.List;
  * @Date 2025/3/26 13:49
  */
 @Data
-@AutoMapper(target = Brand.class)
+@AutoMapper(target = Posts.class)
 public class PostsBo {
 
     /**
