@@ -50,4 +50,7 @@ public class CommentVo  {
      * 帖子的标题
      */
     private String postTitle;
+
+    private String status;
+
 }

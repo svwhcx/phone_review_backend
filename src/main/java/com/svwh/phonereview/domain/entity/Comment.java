@@ -1,5 +1,6 @@
 package com.svwh.phonereview.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.svwh.phonereview.domain.vo.CommentVo;
@@ -37,4 +38,8 @@ public class Comment {
     private Integer favorite;
 
     private Boolean isDelete;
+
+    @TableField("`status`")
+    private String status;
+
 }

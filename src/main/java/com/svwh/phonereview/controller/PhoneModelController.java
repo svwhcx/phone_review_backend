@@ -42,7 +42,7 @@ public class PhoneModelController {
      * 管理员添加一个手机型号
      * @param bo 手机型号数据
      */
-    @PostMapping("/admin")
+    @PostMapping("/admin/add")
     @CheckPermission
     public void add(@RequestBody PhoneModelBo bo) {
         phoneModelService.add(bo);

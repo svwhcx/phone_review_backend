@@ -13,29 +13,29 @@ public class ResultVo<T> implements Serializable {
 
     private T data;
 
-    private String msg;
+    private String message;
 
-    public ResultVo(T data, String msg) {
+    public ResultVo(T data, String message) {
         this.code = 200;
         this.data = data;
-        this.msg = msg;
+        this.message = message;
     }
 
-    public ResultVo(Integer code, String msg) {
+    public ResultVo(Integer code, String message) {
         this.code = code;
-        this.msg = msg;
+        this.message = message;
     }
 
     public ResultVo(T data) {
         this.data = data;
         this.code = 200;
-        this.msg = "success";
+        this.message = "success";
     }
 
-    public ResultVo(Integer code, T data, String msg) {
+    public ResultVo(Integer code, T data, String message) {
         this.code = code;
         this.data = data;
-        this.msg = msg;
+        this.message = message;
     }
 
     public Integer getCode() {
@@ -54,11 +54,11 @@ public class ResultVo<T> implements Serializable {
         this.data = data;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getMessage() {
+        return message;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setMessage(String msg) {
+        this.message = msg;
     }
 }

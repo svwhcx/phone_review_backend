@@ -31,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -91,10 +92,10 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(DefaultErrorCode.EMAIL_EXITS);
         }
         // 加密密码后保存到数据库中
+        bo.setRole("user");
+        bo.setCreateTime(LocalDateTime.now());
+        bo.setPassword(PasswordUtils.encryption(bo.getPassword()));
         User user = MapstructUtils.convert(bo, User.class);
-        user.setRole("user");
-
-        user.setPassword(PasswordUtils.encryption(bo.getPassword()));
         userMapper.insert(user);
         // 发送一条系统通知
         NotificationBo notificationBo = new NotificationBo();

@@ -91,4 +91,19 @@ public interface PostsService {
      * @return
      */
     PageVo<PostsVo> getFavoritesPage(PageQuery pageQuery);
+
+
+    /**
+     * 管理员获取评测列表
+     * @param bo
+     * @param pageQuery
+     */
+    PageVo<PostsVo> adminList(PostsBo bo, PageQuery pageQuery);
+
+    /**
+     * 管理员修改帖子数据
+     * @param bo
+     */
+    void adminUpdate(PostsBo bo);
+
 }

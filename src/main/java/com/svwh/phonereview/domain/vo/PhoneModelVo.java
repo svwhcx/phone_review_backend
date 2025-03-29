@@ -10,6 +10,7 @@ import lombok.Data;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -29,15 +30,15 @@ public class PhoneModelVo  {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
+    private String name;
+
+    private BrandVo brand;
+
     /**
      * 手机型号
      */
     private String model;
 
-    /**
-     * 手机品牌
-     */
-    private String brand;
 
     /**
      * 品牌id
@@ -62,7 +63,7 @@ public class PhoneModelVo  {
     /**
      * 手机的发布时间
      */
-    private LocalDateTime releaseDate;
+    private LocalDate releaseDate;
 
     /**
      * 受欢迎的程度
@@ -78,4 +79,6 @@ public class PhoneModelVo  {
      * 创建时间
      */
     private LocalDateTime createTime;
+
+    private Integer status;
 }

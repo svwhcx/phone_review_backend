@@ -25,6 +25,6 @@ mybatis-plus:
 # 静态资源配置
 application:
   file:
-    path: D:/GraduationDesign/images/
+    path: D:/GraduationDesign/phone_review/images/
   url:
-    prefix: http://localhost:8083/images/
+    prefix: http://localhost:8080/images/

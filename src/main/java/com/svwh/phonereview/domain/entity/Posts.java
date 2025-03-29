@@ -110,4 +110,6 @@ public class Posts {
      * 文章是否启用
      */
     private Boolean enable;
+
+    private Integer status;
 }

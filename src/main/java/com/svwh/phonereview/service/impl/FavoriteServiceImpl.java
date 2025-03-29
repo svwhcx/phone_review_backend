@@ -23,6 +23,8 @@ import org.springframework.jmx.export.NotificationListenerBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * @description
  * @Author cxk
@@ -47,6 +49,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         if (count != null && count > 0){
             throw new BusinessException(bo.getIErrorCode());
         }
+        bo.setCreateTime(LocalDateTime.now());
         Favorite favorite = MapstructUtils.convert(bo, Favorite.class);
         favoriteMapper.insert(favorite);
         // 点赞的时候判断是哪一个点赞

@@ -1,5 +1,6 @@
 package com.svwh.phonereview.domain.bo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.svwh.phonereview.common.validation.AddGroup;
 import com.svwh.phonereview.domain.entity.Comment;
@@ -34,4 +35,13 @@ public class CommentBo {
     private String content;
 
     private Boolean isDelete;
+
+    @TableField(value = "`status`")
+    private String status;
+
+
+    /**
+     * 关键词搜索.
+     */
+    private String keyword;
 }

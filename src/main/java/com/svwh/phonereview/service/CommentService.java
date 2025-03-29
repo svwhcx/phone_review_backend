@@ -39,4 +39,18 @@ public interface CommentService {
      * @return
      */
     PageVo<CommentVo> queryUserComments(PageQuery pageQuery);
+
+    /**
+     * 管理员分页查看评论列表
+     * @param bo
+     * @param pageQuery
+     * @return
+     */
+    PageVo<CommentVo> adminList(CommentBo bo, PageQuery pageQuery);
+
+    /**
+     * 更新评论的状态。
+     * @param bo
+     */
+    void updateStatus(CommentBo bo);
 }

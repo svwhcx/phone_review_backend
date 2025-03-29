@@ -6,8 +6,10 @@ import com.svwh.phonereview.domain.entity.PhoneModel;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -24,17 +26,18 @@ public class PhoneModelBo {
      */
     private Long id;
 
+    private String name;
     /**
      * 手机型号
      */
     @NotNull(groups = {AddGroup.class, EditGroup.class})
     private String model;
 
-    /**
-     * 手机品牌
-     */
-    @NotNull(groups = {AddGroup.class, EditGroup.class})
-    private String brand;
+//    /**
+//     * 手机品牌
+//     */
+//    @NotNull(groups = {AddGroup.class, EditGroup.class})
+//    private String brand;
 
     /**
      * 品牌id
@@ -60,7 +63,8 @@ public class PhoneModelBo {
     /**
      * 手机的发布时间
      */
-    private LocalDateTime releaseDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate releaseDate;
 
     /**
      * 受欢迎的程度
@@ -81,4 +85,6 @@ public class PhoneModelBo {
      * 关键词过滤（用于管理员分页获取列表）
      */
     private String keyword;
+
+    private Integer status;
 }

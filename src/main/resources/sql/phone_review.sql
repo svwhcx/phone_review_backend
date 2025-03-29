@@ -11,7 +11,7 @@
  Target Server Version : 50732
  File Encoding         : 65001
 
- Date: 29/03/2025 10:33:29
+ Date: 29/03/2025 20:52:22
 */
 
 SET NAMES utf8mb4;
@@ -33,7 +33,7 @@ CREATE TABLE `announcement`  (
   `expire_time` datetime NULL DEFAULT NULL COMMENT '过期时间',
   `schedule_time` datetime NULL DEFAULT NULL COMMENT '定时发布的时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for brand
@@ -49,7 +49,7 @@ CREATE TABLE `brand`  (
   `country` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '手机品牌所属的国家',
   `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for collection
@@ -76,6 +76,7 @@ CREATE TABLE `comment`  (
   `is_delete` tinyint(1) NULL DEFAULT NULL COMMENT '是否删除',
   `post_id` bigint(20) NULL DEFAULT NULL COMMENT '文章的id',
   `favorite` int(11) NULL DEFAULT NULL COMMENT '评论的点赞量',
+  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '评论的状态(appending，approved，rejected）',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
@@ -132,8 +133,20 @@ CREATE TABLE `phone_model`  (
   `price` decimal(10, 2) NULL DEFAULT NULL COMMENT '价格',
   `release_date` datetime NULL DEFAULT NULL COMMENT '发布时间',
   `popularity` int(11) NULL DEFAULT NULL COMMENT '受欢迎的程度',
+  `status` int(11) NULL DEFAULT NULL COMMENT '启用状态',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for photo
+-- ----------------------------
+DROP TABLE IF EXISTS `photo`;
+CREATE TABLE `photo`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `addr` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '地址',
+  `user_id` bigint(20) NULL DEFAULT NULL COMMENT '用户id',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for posts
@@ -149,7 +162,7 @@ CREATE TABLE `posts`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
   `enable` tinyint(1) NULL DEFAULT NULL COMMENT '是否开启',
   `views` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '浏览器',
-  `status` tinyint(1) NULL DEFAULT NULL COMMENT '是否发布',
+  `status` int(11) NULL DEFAULT NULL COMMENT '帖子状态(1: 正常，0：已屏蔽,2：待审核)',
   `images` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '图片列表',
   `appearance_rating` int(11) NULL DEFAULT NULL COMMENT '外观表现',
   `screen_rating` int(11) NULL DEFAULT NULL COMMENT '屏幕表现',
@@ -158,7 +171,7 @@ CREATE TABLE `posts`  (
   `battery_rating` int(11) NULL DEFAULT NULL COMMENT '电池表现',
   `system_rating` int(11) NULL DEFAULT NULL COMMENT '系统表现',
   `brand_id` bigint(20) NULL DEFAULT NULL COMMENT '品牌id',
-  `rating` int(11) NULL DEFAULT NULL COMMENT '综合评分',
+  `rating` decimal(11, 0) NULL DEFAULT NULL COMMENT '综合评分',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 

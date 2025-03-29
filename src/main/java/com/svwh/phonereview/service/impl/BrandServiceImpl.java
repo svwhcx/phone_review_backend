@@ -17,6 +17,7 @@ import com.svwh.phonereview.utils.MapstructUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -43,6 +44,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public void add(BrandBo bo) {
+        bo.setCreateTime(LocalDateTime.now());
         Brand brand = MapstructUtils.convert(bo, Brand.class);
         brandMapper.insert(brand);
     }

@@ -15,35 +15,47 @@ import org.springframework.web.bind.annotation.*;
  * @Date 2025/3/24 22:02
  */
 @RestController
-@RequestMapping("/comment")
+@RequestMapping("/comments")
 @RequiredArgsConstructor
 public class CommentController {
 
 
-//    private final CommentService commentService;
-//
-//
-//    /**
-//     * 分页获取评论列表
-//     * @param bo
-//     * @param pageVo
-//     * @return
-//     */
-//    @GetMapping("/list")
-//    public PageVo<CommentVo> list(CommentBo bo, PageQuery pageVo){
-//        return commentService.list(bo,pageVo);
-//    }
-//
-//    /**
-//     * 管理员分页查看评论列表
-//     * @param bo
-//     * @param pageVo
-//     * @return
-//     */
-//    @GetMapping("/list/admin")
-//    public PageVo<CommentVo> listAdmin(CommentBo bo, PageQuery pageVo){
-//        return commentService.listAdmin(bo,pageVo);
-//    }
+    private final CommentService commentService;
+
+
+    /**
+     * 管理员分页查看评论列表
+     * @param bo
+     * @return
+     */
+    @GetMapping("/admin/list")
+    public PageVo<CommentVo> listAdmin(CommentBo bo, PageQuery pageQuery){
+        return commentService.adminList(bo,pageQuery);
+    }
+
+
+    /**
+     * 管理员删除评论
+     * @param commentId
+     */
+    @DeleteMapping("/admin/{commentId}")
+    public void delete(@PathVariable Long commentId){
+        CommentBo bo = new CommentBo();
+        bo.setId(commentId);
+        commentService.delete(bo);
+    }
+
+    /**
+     * 管理员更新评论的状态，例如审核是否通过
+     * @param commentId
+     * @param bo
+     */
+    @PutMapping("/admin/{commentId}/status")
+    public void updateStatus(@PathVariable Long commentId,@RequestBody CommentBo bo){
+        bo.setId(commentId);
+        commentService.updateStatus(bo);
+    }
+
 //
 //    /**
 //     * 用户发表一个评论
@@ -54,14 +66,6 @@ public class CommentController {
 //         commentService.add(bo);
 //    }
 //
-//    /**
-//     * 用户删除自己的评论
-//     * @param id
-//     */
-//    @DeleteMapping("/{id}")
-//    public void delete(@NotNull @PathVariable Long id){
-//        commentService.delete(id);
-//    }
 //
 //    /**
 //     * 用户点赞一个评论

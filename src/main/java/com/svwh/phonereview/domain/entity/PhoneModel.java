@@ -1,5 +1,6 @@
 package com.svwh.phonereview.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.svwh.phonereview.domain.vo.PhoneModelVo;
@@ -7,6 +8,7 @@ import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -63,10 +65,13 @@ public class PhoneModel {
     /**
      * 手机的发布时间
      */
-    private LocalDateTime releaseDate;
+    private LocalDate releaseDate;
 
     /**
      * 创建时间
      */
     private LocalDateTime createTime;
+
+    @TableField("`status`")
+    private Integer status;
 }

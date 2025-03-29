@@ -1,9 +1,13 @@
 package com.svwh.phonereview.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
+import com.svwh.phonereview.common.constant.CommentConstant;
 import com.svwh.phonereview.domain.bo.CommentBo;
 import com.svwh.phonereview.domain.bo.NotificationBo;
 import com.svwh.phonereview.domain.entity.Comment;
@@ -22,9 +26,11 @@ import com.svwh.phonereview.service.CommentService;
 import com.svwh.phonereview.service.NotificationService;
 import com.svwh.phonereview.utils.MapstructUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -64,9 +70,9 @@ public class CommentServiceImpl implements CommentService {
         if (user.getIsMuted()) {
             throw new BusinessException(DefaultErrorCode.USER_IS_MUTED);
         }
+        bo.setCreateTime(LocalDateTime.now());
         Comment add = MapstructUtils.convert(bo, Comment.class);
         commentMapper.insert(add);
-        // TODO 发布一个通知
         // 先获取评论的评测信息
         Posts posts = postsMapper.selectById(bo.getPostId());
         // 1. 判断是否是回复别人的评论
@@ -120,5 +126,43 @@ public class CommentServiceImpl implements CommentService {
         Map<Long, Posts> postsMap = posts.stream().collect(Collectors.toMap(Posts::getId, Function.identity()));
         commentVoPageVo.getRecords().forEach(item -> item.setPostTitle(postsMap.get(item.getPostId()).getTitle()));
         return commentVoPageVo;
+    }
+
+    @Override
+    public PageVo<CommentVo> adminList(CommentBo bo, PageQuery pageQuery) {
+        // 分页联合查询
+        QueryWrapper<Comment> cLqw = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(bo.getStatus())){
+            cLqw.eq("c.status", bo.getStatus());
+        }
+        if (StringUtils.isNotBlank(bo.getKeyword())){
+            cLqw.like("c.content",bo.getKeyword())
+                    .or()
+                    .like("u.username",bo.getKeyword());
+        }
+        cLqw.orderByDesc("c.create_time");
+        IPage<CommentVo> commentVoIPage = commentMapper.adminQueryList(pageQuery.buildMybatisPage(), cLqw);
+        return PageVo.build(commentVoIPage);
+    }
+
+    @Override
+    @Transactional
+    public void updateStatus(CommentBo bo) {
+        Comment comment = commentMapper.selectById(bo.getId());
+        NotificationBo notificationBo = new NotificationBo();
+        notificationBo.setType("system");
+        notificationBo.setTitle("评论审核");
+        notificationBo.setContent("您的评论 <b>"+ comment.getContent()+ "</b>");
+        notificationBo.setUserId(comment.getUserId());
+        if (CommentConstant.APPROVED.equals(bo.getStatus())){
+            notificationBo.setContent(notificationBo.getContent()+"已通过审核");
+            notificationBo.setLink("/review/"+comment.getPostId());
+        }
+        if (CommentConstant.REJECTED.equals(bo.getStatus())){
+            notificationBo.setContent(notificationBo.getContent()+"未通过审核，请重新提交");
+        }
+        notificationService.add(notificationBo);
+        // 管理员更新评论的状态
+        commentMapper.updateById(MapstructUtils.convert(bo,Comment.class));
     }
 }

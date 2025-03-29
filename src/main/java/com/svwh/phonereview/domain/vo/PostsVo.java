@@ -9,7 +9,9 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @description
@@ -90,7 +92,7 @@ public class PostsVo  {
     /**
      * 综合评分
      */
-    private Integer rating;
+    private BigDecimal rating;
 
     /**
      * 帖子的浏览量
@@ -117,4 +119,21 @@ public class PostsVo  {
      * 文章是否启用
      */
     private Boolean enable;
+
+    private Integer status;
+
+
+    /**
+     * vo数据
+     */
+
+    private String userAvatar;
+
+    private String username;
+
+    private String brand;
+
+    private String phoneModel;
+
+    private List<String> fileList;
 }

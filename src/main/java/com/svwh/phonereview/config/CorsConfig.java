@@ -53,7 +53,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
-        registry.addResourceHandler("/images/"+"/**")
+        registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:"+filePath);
     }
 

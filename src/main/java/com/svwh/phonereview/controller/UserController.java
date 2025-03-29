@@ -142,7 +142,7 @@ public class UserController {
      */
     @PutMapping("/admin/{userId}/mute")
     @CheckPermission(RoleEnum.ADMIN)
-    public void updateUserMute(@PathVariable Long userId,UserBo userBo){
+    public void updateUserMute(@PathVariable Long userId,@RequestBody UserBo userBo){
         userService.updateUserMuted(userId,userBo);
     }
 

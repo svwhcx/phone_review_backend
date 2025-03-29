@@ -40,6 +40,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             // 定时发布
             // TODO
         }
+        bo.setCreateTime(LocalDateTime.now());
         Announcement announcement = MapstructUtils.convert(bo, Announcement.class);
         announcementMapper.insert(announcement);
     }

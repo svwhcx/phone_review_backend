@@ -53,13 +53,11 @@ public class ResultWrapperHandler implements ResponseBodyAdvice<Object> {
 
     @Override
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
-        if (body == null) {
-            return null;
-        }
+
         if (body instanceof ResultVo) {
             return body;
         }
-        if (returnType.getGenericParameterType().equals(String.class)) {
+        if (body == null || returnType.getGenericParameterType().equals(String.class)) {
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 // 将数据包装在Result里后，再转换为json字符串响应给前端

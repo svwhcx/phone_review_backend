@@ -1,11 +1,13 @@
 package com.svwh.phonereview.domain.bo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.svwh.phonereview.common.validation.AddGroup;
 import com.svwh.phonereview.common.validation.EditGroup;
 import com.svwh.phonereview.domain.entity.Announcement;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -47,6 +49,8 @@ public class AnnouncementBo {
     /**
      * 公告发布的时间
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime publishTime;
 
     /**

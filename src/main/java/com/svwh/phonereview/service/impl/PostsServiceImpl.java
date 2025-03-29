@@ -1,26 +1,33 @@
 package com.svwh.phonereview.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.common.constant.FavoriteConstant;
+import com.svwh.phonereview.common.constant.PostsConstant;
 import com.svwh.phonereview.domain.bo.FavoriteBo;
+import com.svwh.phonereview.domain.bo.NotificationBo;
 import com.svwh.phonereview.domain.bo.PostsBo;
 import com.svwh.phonereview.domain.entity.Favorite;
 import com.svwh.phonereview.domain.entity.Posts;
+import com.svwh.phonereview.domain.vo.BrandVo;
+import com.svwh.phonereview.domain.vo.PhoneModelVo;
 import com.svwh.phonereview.domain.vo.PostsVo;
+import com.svwh.phonereview.domain.vo.UserVo;
 import com.svwh.phonereview.exception.BusinessException;
 import com.svwh.phonereview.exception.DefaultErrorCode;
-import com.svwh.phonereview.mapper.FavoriteMapper;
-import com.svwh.phonereview.mapper.PostsMapper;
+import com.svwh.phonereview.mapper.*;
 import com.svwh.phonereview.query.PageQuery;
 import com.svwh.phonereview.query.PageVo;
 import com.svwh.phonereview.service.FavoriteService;
+import com.svwh.phonereview.service.NotificationService;
 import com.svwh.phonereview.service.PostsService;
 import com.svwh.phonereview.utils.MapstructUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,11 +48,19 @@ public class PostsServiceImpl implements PostsService {
     private final PostsMapper postsMapper;
     private final FavoriteService favoriteService;
     private final FavoriteMapper favoriteMapper;
+    private final UserMapper userMapper;
+    private final PhoneModelMapper phoneModelMapper;
+    private final BrandMapper brandMapper;
+    private final NotificationService notificationService;
 
     @Override
     public void add(PostsBo bo) {
+        bo.setCreateTime(LocalDateTime.now());
+        // 对图片进行拼接
+        if (bo.getFileList() != null && !bo.getFileList().isEmpty()){
+            bo.setImages(String.join(",", bo.getFileList()));
+        }
         Posts posts = MapstructUtils.convert(bo, Posts.class);
-        posts.setCreateTime(LocalDateTime.now());
         postsMapper.insert(posts);
     }
 
@@ -59,7 +74,12 @@ public class PostsServiceImpl implements PostsService {
 
     @Override
     public PostsVo get(Long id) {
-        return postsMapper.selectVoById(id);
+        PostsVo vo = postsMapper.selectVoById(id);
+        // 拆分图片
+        if (StringUtils.isNotBlank(vo.getImages())){
+            vo.setFileList(new ArrayList<>(List.of(vo.getImages().split(","))));
+        }
+        return vo;
     }
 
     @Override
@@ -147,6 +167,73 @@ public class PostsServiceImpl implements PostsService {
         favoritePage.getRecords().forEach(item -> postsVoList.add(postsVoMap.get(item.getTargetId())));
         pageVo.setRecords(postsVoList);
         return pageVo;
+    }
+
+
+    /**
+     * ---------------------------------
+     *           管理员部分
+     *
+     *-----------------------------------
+     */
+
+    @Override
+    public PageVo<PostsVo> adminList(PostsBo bo, PageQuery pageQuery) {
+        LambdaQueryWrapper<Posts> pLqw = Wrappers.lambdaQuery();
+        if (bo.getStatus() != null){
+            pLqw.eq(Posts::getStatus, bo.getStatus());
+        }
+        if (StringUtils.isNotBlank(bo.getKeyword())){
+            pLqw.like(Posts::getTitle, bo.getKeyword())
+                    .or()
+                    .like(Posts::getContent, bo.getKeyword());
+        }
+        pLqw.orderByDesc(Posts::getCreateTime);
+        PageVo<PostsVo> pageVo = postsMapper.selectVoPage(pageQuery.buildMybatisPage(), pLqw);
+        if (pageVo.getRecords() == null || pageVo.getRecords().isEmpty()){
+            return pageVo;
+        }
+        // 组装用户数据
+        List<Long> userIds = pageVo.getRecords().stream().map(PostsVo::getUserId).toList();
+        List<UserVo> userVos = userMapper.selectVoBatchIds(userIds);
+        Map<Long, UserVo> userVoMap = userVos.stream().collect(Collectors.toMap(UserVo::getId, Function.identity()));
+        // 组装品牌和型号数据
+        List<Long> phoneModelIds = pageVo.getRecords().stream().map(PostsVo::getPhoneModelId).toList();
+        List<PhoneModelVo> phoneModelVos = phoneModelMapper.selectVoBatchIds(phoneModelIds);
+        Map<Long, PhoneModelVo> phoneModelVoMap = phoneModelVos.stream().collect(Collectors.toMap(PhoneModelVo::getId, Function.identity()));
+        // 组装品牌数据
+        List<Long> brandIds = phoneModelVos.stream().map(PhoneModelVo::getBrandId).toList();
+        List<BrandVo> brandVos = brandMapper.selectVoBatchIds(brandIds);
+        Map<Long, BrandVo> brandVoMap = brandVos.stream().collect(Collectors.toMap(BrandVo::getId, Function.identity()));
+        pageVo.getRecords().forEach(item -> {
+            item.setUserAvatar(userVoMap.get(item.getUserId()).getAvatar());
+            item.setUsername(userVoMap.get(item.getUserId()).getUsername());
+            item.setBrand(brandVoMap.get(item.getBrandId()).getName());
+            item.setPhoneModel(phoneModelVoMap.get(item.getPhoneModelId()).getName());
+        });
+        return pageVo;
+    }
+
+    @Override
+    @Transactional
+    public void adminUpdate(PostsBo bo) {
+        // 获取这个帖子对应的用户的id
+        Posts posts = postsMapper.selectById(bo.getId());
+        // 更新的时候应该会发送系统通知。
+        NotificationBo notificationBo = new NotificationBo();
+        notificationBo.setType("system");
+        notificationBo.setLink("/user-center");
+        notificationBo.setTitle("评测审核");
+        notificationBo.setContent("您的评测 <b>"+ posts.getTitle()+ "</b>");
+        notificationBo.setUserId(posts.getUserId());
+        if (PostsConstant.REJECTED.equals(bo.getStatus())){
+            notificationBo.setContent(notificationBo.getContent()+"未通过审核，请重新提交评测");
+        }else {
+            notificationBo.setContent(notificationBo.getContent()+"已通过审核，请查看");
+            notificationBo.setLink("/post/" + bo.getId());
+        }
+        notificationService.add(notificationBo);
+        postsMapper.updateById(MapstructUtils.convert(bo,Posts.class));
     }
 
     /**

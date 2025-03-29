@@ -222,4 +222,34 @@ public class PostsController {
         bo.setUserId(UserInfoThreadLocal.get().getUserId());
         favoriteService.delete(bo);
     }
+
+
+    /***
+     *
+     * ------------------------------------------
+     *                 管理员部分
+     * ------------------------------------------
+     */
+
+    /**
+     * 管理员获取评测列表（分页）
+     * @param bo
+     * @param pageQuery
+     * @return
+     */
+    @GetMapping("/admin/list")
+    public PageVo<PostsVo> adminListPosts(PostsBo bo,PageQuery pageQuery){
+        return postsService.adminList(bo,pageQuery);
+    }
+
+    /**
+     * 管理员修改帖子的状态
+     * @param postId
+     * @param bo
+     */
+    @PutMapping("/admin/{postId}/status")
+    public void updateStatus(@PathVariable Long postId,@RequestBody PostsBo bo){
+        bo.setId(postId);
+        postsService.adminUpdate(bo);
+    }
 }

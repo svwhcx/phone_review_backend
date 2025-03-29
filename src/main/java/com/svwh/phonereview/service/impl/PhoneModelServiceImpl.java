@@ -7,9 +7,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.common.constant.FavoriteConstant;
 import com.svwh.phonereview.domain.bo.PhoneModelBo;
+import com.svwh.phonereview.domain.entity.Brand;
 import com.svwh.phonereview.domain.entity.Favorite;
 import com.svwh.phonereview.domain.entity.PhoneModel;
+import com.svwh.phonereview.domain.vo.BrandVo;
 import com.svwh.phonereview.domain.vo.PhoneModelVo;
+import com.svwh.phonereview.mapper.BrandMapper;
 import com.svwh.phonereview.mapper.FavoriteMapper;
 import com.svwh.phonereview.mapper.PhoneModelMapper;
 import com.svwh.phonereview.query.PageQuery;
@@ -19,6 +22,7 @@ import com.svwh.phonereview.utils.MapstructUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +40,7 @@ public class PhoneModelServiceImpl implements PhoneModelService {
 
     private final PhoneModelMapper phoneModelMapper;
     private final FavoriteMapper favoriteMapper;
+    private final BrandMapper brandMapper;
 
     @Override
     public PageVo<PhoneModelVo> queryPage(PhoneModelBo bo, PageQuery pageQuery) {
@@ -49,11 +54,23 @@ public class PhoneModelServiceImpl implements PhoneModelService {
                     .or()
                     .like(PhoneModel::getDescription,bo.getKeyword());
         }
-        return phoneModelMapper.selectVoPage(pageQuery.buildMybatisPage(),phLqw);
+        PageVo<PhoneModelVo> pagevo = phoneModelMapper.selectVoPage(pageQuery.buildMybatisPage(),phLqw);
+        if (pagevo.getRecords() == null || pagevo.getRecords().isEmpty()){
+            return pagevo;
+        }
+        List<Long> brandIds = pagevo.getRecords().stream().map(PhoneModelVo::getBrandId).toList();
+        LambdaQueryWrapper<Brand> bLqw = Wrappers.lambdaQuery();
+        bLqw.in(Brand::getId,brandIds)
+                .select(Brand::getId,Brand::getName,Brand::getLogo);
+        List<BrandVo> brands = brandMapper.selectVoList(bLqw);
+        Map<Long,BrandVo> brandMap = brands.stream().collect(Collectors.toMap(BrandVo::getId, Function.identity()));
+        pagevo.getRecords().forEach(item -> item.setBrand(brandMap.get(item.getBrandId())));
+        return pagevo;
     }
 
     @Override
     public void add(PhoneModelBo bo) {
+        bo.setCreateTime(LocalDateTime.now());
         phoneModelMapper.insert(MapstructUtils.convert(bo, PhoneModel.class));
     }
 

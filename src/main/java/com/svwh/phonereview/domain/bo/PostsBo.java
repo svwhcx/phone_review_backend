@@ -4,7 +4,9 @@ import com.svwh.phonereview.domain.entity.Brand;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @description
@@ -82,7 +84,7 @@ public class PostsBo {
     /**
      * 综合评分
      */
-    private Integer rating;
+    private BigDecimal rating;
 
     /**
      * 帖子的浏览量
@@ -109,4 +111,14 @@ public class PostsBo {
      * 文章是否启用
      */
     private Boolean enable;
+
+    private Integer status;
+
+
+    /**
+     * 搜索的关键字
+     */
+    private String keyword;
+
+    private List<String> fileList;
 }
