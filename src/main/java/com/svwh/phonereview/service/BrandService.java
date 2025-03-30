@@ -61,4 +61,12 @@ public interface BrandService {
      * @return
      */
     List<PhoneModelVo> listModels(Long brandId);
+
+    /**
+     * 获取一个品牌的详细数据
+     * @param brandId
+     * @return
+     */
+    BrandVo getById(Long brandId);
+
 }

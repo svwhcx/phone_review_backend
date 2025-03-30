@@ -1,6 +1,7 @@
 package com.svwh.phonereview.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,10 +13,7 @@ import com.svwh.phonereview.common.constant.PostsConstant;
 import com.svwh.phonereview.domain.bo.FavoriteBo;
 import com.svwh.phonereview.domain.bo.NotificationBo;
 import com.svwh.phonereview.domain.bo.PostsBo;
-import com.svwh.phonereview.domain.entity.Comment;
-import com.svwh.phonereview.domain.entity.Favorite;
-import com.svwh.phonereview.domain.entity.Posts;
-import com.svwh.phonereview.domain.entity.User;
+import com.svwh.phonereview.domain.entity.*;
 import com.svwh.phonereview.domain.vo.*;
 import com.svwh.phonereview.exception.BusinessException;
 import com.svwh.phonereview.exception.DefaultErrorCode;
@@ -60,7 +58,7 @@ public class PostsServiceImpl implements PostsService {
     public void add(PostsBo bo) {
         bo.setCreateTime(LocalDateTime.now());
         // 对图片进行拼接
-        if (bo.getFileList() != null && !bo.getFileList().isEmpty()){
+        if (bo.getFileList() != null && !bo.getFileList().isEmpty()) {
             bo.setImages(String.join(",", bo.getFileList()));
         }
         bo.setUserId(UserInfoThreadLocal.get().getUserId());
@@ -80,7 +78,7 @@ public class PostsServiceImpl implements PostsService {
     @Override
     public PostsVo get(Long id) {
         PostsVo vo = postsMapper.selectVoById(id);
-        if (!PostsConstant.APPROVED.equals(vo.getStatus())){
+        if (!PostsConstant.APPROVED.equals(vo.getStatus())) {
             throw new BusinessException(DefaultErrorCode.POSTS_REJECTED);
         }
         // 组装用户数据
@@ -89,7 +87,7 @@ public class PostsServiceImpl implements PostsService {
         vo.setUserAvatar(user.getAvatar());
         vo.setNickname(user.getNickname());
         // 拆分图片
-        if (StringUtils.isNotBlank(vo.getImages())){
+        if (StringUtils.isNotBlank(vo.getImages())) {
             vo.setFileList(new ArrayList<>(List.of(vo.getImages().split(","))));
         }
         // 组装点赞数和收藏数，以及评论数
@@ -99,7 +97,7 @@ public class PostsServiceImpl implements PostsService {
         favoriteLqw.eq(Favorite::getTargetId, id)
                 .eq(Favorite::getType, FavoriteConstant.LIKE_POST)
                 .or()
-                .eq(Favorite::getType,FavoriteConstant.FAVORITE_POST);
+                .eq(Favorite::getType, FavoriteConstant.FAVORITE_POST);
         List<FavoriteVo> vos = favoriteMapper.selectVoList(favoriteLqw);
         // 评论数
         LambdaQueryWrapper<Comment> cLqw = Wrappers.lambdaQuery();
@@ -114,49 +112,114 @@ public class PostsServiceImpl implements PostsService {
         long likeCount = 0;
         long favoriteCount = 0;
         for (FavoriteVo fVo : vos) {
-            if (FavoriteConstant.LIKE_POST.equals(fVo.getType())){
+            if (FavoriteConstant.LIKE_POST.equals(fVo.getType())) {
                 likeCount++;
-                if (tokenInfo != null && tokenInfo.getUserId().equals(vo.getUserId())){
+                if (tokenInfo != null && tokenInfo.getUserId().equals(fVo.getUserId())) {
                     isLiked = true;
                 }
-            }else if(FavoriteConstant.FAVORITE_POST.equals(fVo.getType())){
+            } else if (FavoriteConstant.FAVORITE_POST.equals(fVo.getType())) {
                 favoriteCount++;
-                if (tokenInfo != null && tokenInfo.getUserId().equals(vo.getUserId())){
+                if (tokenInfo != null && tokenInfo.getUserId().equals(fVo.getUserId())) {
                     isFavorited = true;
                 }
             }
         }
-        vo.setComments(Math.max(count,0));
+        vo.setComments(Math.max(count, 0));
         vo.setLikeCount(likeCount);
         vo.setFavoriteCount(favoriteCount);
         vo.setIsFavorited(isFavorited);
         vo.setIsLiked(isLiked);
+        // 添加一个评测的查询
+        addViews(id);
         return vo;
+    }
+
+    /**
+     * 增加一个帖子的阅读量
+     *
+     * @param postId 帖子的id
+     */
+    private void addViews(Long postId) {
+        LambdaUpdateWrapper<Posts> pLuw = Wrappers.lambdaUpdate();
+        pLuw.eq(Posts::getId, postId)
+                .setSql("views = views + 1");
+        postsMapper.update(pLuw);
     }
 
     @Override
     public PageVo<PostsVo> queryPage(PostsBo bo, PageQuery pageQuery) {
         LambdaQueryWrapper<Posts> pLqw = Wrappers.lambdaQuery();
-        pLqw.eq(Posts::getStatus,PostsConstant.APPROVED);
+        pLqw.eq(Posts::getStatus, PostsConstant.APPROVED)
+                .orderByDesc(Posts::getCreateTime);
+        if (bo.getBrandId() != null){
+            pLqw.eq(Posts::getBrandId, bo.getBrandId());
+        }
         PageVo<PostsVo> pagevo = postsMapper.selectVoPage(pageQuery.buildMybatisPage(), pLqw);
         // 配置用户的头像
-        if (pagevo.getRecords() == null || pagevo.getRecords().isEmpty()){
+        if (pagevo.getRecords() == null || pagevo.getRecords().isEmpty()) {
             return pagevo;
         }
 
         List<Long> userIds = pagevo.getRecords().stream().map(PostsVo::getUserId).toList();
         LambdaQueryWrapper<User> uLqw = Wrappers.lambdaQuery();
         uLqw.in(User::getId, userIds)
-                .select(User::getId, User::getAvatar,User::getUsername,User::getNickname);
+                .select(User::getId, User::getAvatar, User::getUsername, User::getNickname);
         Map<Long, UserVo> userMap = userMapper.selectVoList(uLqw).stream().collect(Collectors.toMap(UserVo::getId, Function.identity()));
+        // 组装阅读量、收藏量、评论数、以及设置阅读数
+        // 1. 获取收藏量和点赞量
+        List<Long> list = pagevo.getRecords().stream().map(PostsVo::getId).toList();
+        LambdaQueryWrapper<Favorite> fLqw = Wrappers.lambdaQuery();
+        fLqw.in(Favorite::getTargetId, list)
+                .eq(Favorite::getType, FavoriteConstant.FAVORITE_POST)
+                .or()
+                .eq(Favorite::getType, FavoriteConstant.LIKE_POST)
+                .select(Favorite::getTargetId, Favorite::getType,Favorite::getUserId);
+        List<FavoriteVo> favoriteVos = favoriteMapper.selectVoList(fLqw);
+        // 获取评论数
+        LambdaQueryWrapper<Comment> cLqw = Wrappers.lambdaQuery();
+        cLqw.in(Comment::getPostId, list)
+                .eq(Comment::getStatus, CommentConstant.APPROVED)
+                .eq(Comment::getIsDelete, false)
+                .select(Comment::getPostId, Comment::getId);
+        List<CommentVo> commentVos = commentMapper.selectVoList(cLqw);
+        Map<Long, Long> commentCountMap = commentVos.stream().collect(Collectors.groupingBy(CommentVo::getPostId, Collectors.counting()));
+        // 获取手机品牌和手机类型
+        LambdaQueryWrapper<Brand> bLqw = Wrappers.lambdaQuery();
+        List<Long> brandIds = pagevo.getRecords().stream().map(PostsVo::getBrandId).toList();
+        bLqw.in(Brand::getId, brandIds)
+                .select(Brand::getId, Brand::getName);
+        List<BrandVo> brandVos = brandMapper.selectVoList(bLqw);
+        Map<Long, BrandVo> brandMap = brandVos.stream().collect(Collectors.toMap(BrandVo::getId, Function.identity()));
+        List<Long> phoneModelIds = pagevo.getRecords().stream().map(PostsVo::getPhoneModelId).toList();
+        LambdaQueryWrapper<PhoneModel> pmLqw = Wrappers.lambdaQuery();
+        pmLqw.in(PhoneModel::getId, phoneModelIds)
+                .select(PhoneModel::getId, PhoneModel::getName);
+        List<PhoneModelVo> phoneModelVos = phoneModelMapper.selectVoList(pmLqw);
+        Map<Long, PhoneModelVo> phoneModelMap = phoneModelVos.stream().collect(Collectors.toMap(PhoneModelVo::getId, Function.identity()));
+        TokenInfo tokenInfo = UserInfoThreadLocal.get();
         pagevo.getRecords().forEach(vo -> {
             // 分割图片
-            if (StringUtils.isNotBlank(vo.getImages())){
+            if (StringUtils.isNotBlank(vo.getImages())) {
                 vo.setFileList(new ArrayList<>(List.of(vo.getImages().split(","))));
             }
             vo.setUsername(userMap.get(vo.getUserId()).getUsername());
             vo.setNickname(userMap.get(vo.getUserId()).getNickname());
             vo.setUserAvatar(userMap.get(vo.getUserId()).getAvatar());
+            // 组装基础数据
+            // 组装评论数
+            vo.setComments(commentCountMap.getOrDefault(vo.getId(), 0L));
+            // 组装收藏量和点赞量
+            long likeCount = favoriteVos.stream().filter(item -> item.getType().equals(FavoriteConstant.LIKE_POST) && item.getTargetId().equals(vo.getId())).count();
+            long favoriteCount = favoriteVos.stream().filter(item -> item.getType().equals(FavoriteConstant.FAVORITE_POST) && item.getTargetId().equals(vo.getId())).count();
+            vo.setLikeCount(likeCount);
+            vo.setFavoriteCount(favoriteCount);
+            vo.setBrand(brandMap.get(vo.getBrandId()).getName());
+            vo.setPhoneModel(phoneModelMap.get(vo.getPhoneModelId()).getName());
+            // 根据用户的id计算用户是否收藏或者点赞
+            if (tokenInfo != null) {
+                vo.setIsFavorited(favoriteVos.stream().anyMatch(item -> item.getType().equals(FavoriteConstant.FAVORITE_POST) && item.getTargetId().equals(vo.getId()) && item.getUserId().equals(tokenInfo.getUserId())));
+                vo.setIsLiked(favoriteVos.stream().anyMatch(item -> item.getType().equals(FavoriteConstant.LIKE_POST) && item.getTargetId().equals(vo.getId()) && item.getUserId().equals(tokenInfo.getUserId())));
+            }
         });
         return pagevo;
     }
@@ -230,14 +293,21 @@ public class PostsServiceImpl implements PostsService {
         PageVo<PostsVo> pageVo = new PageVo<>();
         pageVo.setTotal(favoritePage.getTotal());
         pageVo.setPageNum(favoritePage.getCurrent());
-        if (favoritePage.getRecords() == null || favoritePage.getRecords().isEmpty()){
+        if (favoritePage.getRecords() == null || favoritePage.getRecords().isEmpty()) {
             return pageVo;
         }
         List<PostsVo> postsVoList = new ArrayList<>();
         List<Long> postIds = favoritePage.getRecords().stream().map(Favorite::getTargetId).toList();
         List<PostsVo> posts = postsMapper.selectVoBatchIds(postIds);
         Map<Long, PostsVo> postsVoMap = posts.stream().collect(Collectors.toMap(PostsVo::getId, Function.identity()));
-        favoritePage.getRecords().forEach(item -> postsVoList.add(postsVoMap.get(item.getTargetId())));
+        favoritePage.getRecords().forEach(item -> {
+            PostsVo postsVo = postsVoMap.get(item.getTargetId());
+            postsVoList.add(postsVo);
+            // 处理图片分割
+            if (StringUtils.isNotBlank(postsVo.getImages())) {
+                postsVo.setFileList(new ArrayList<>(List.of(postsVo.getImages().split(","))));
+            }
+        });
         pageVo.setRecords(postsVoList);
         return pageVo;
     }
@@ -245,25 +315,25 @@ public class PostsServiceImpl implements PostsService {
 
     /**
      * ---------------------------------
-     *           管理员部分
-     *
-     *-----------------------------------
+     * 管理员部分
+     * <p>
+     * -----------------------------------
      */
 
     @Override
     public PageVo<PostsVo> adminList(PostsBo bo, PageQuery pageQuery) {
         LambdaQueryWrapper<Posts> pLqw = Wrappers.lambdaQuery();
-        if (bo.getStatus() != null){
+        if (bo.getStatus() != null) {
             pLqw.eq(Posts::getStatus, bo.getStatus());
         }
-        if (StringUtils.isNotBlank(bo.getKeyword())){
+        if (StringUtils.isNotBlank(bo.getKeyword())) {
             pLqw.like(Posts::getTitle, bo.getKeyword())
                     .or()
                     .like(Posts::getContent, bo.getKeyword());
         }
         pLqw.orderByDesc(Posts::getCreateTime);
         PageVo<PostsVo> pageVo = postsMapper.selectVoPage(pageQuery.buildMybatisPage(), pLqw);
-        if (pageVo.getRecords() == null || pageVo.getRecords().isEmpty()){
+        if (pageVo.getRecords() == null || pageVo.getRecords().isEmpty()) {
             return pageVo;
         }
         // 组装用户数据
@@ -299,16 +369,16 @@ public class PostsServiceImpl implements PostsService {
         notificationBo.setType("system");
         notificationBo.setLink("/user-center");
         notificationBo.setTitle("评测审核");
-        notificationBo.setContent("您的评测 <b>"+ posts.getTitle()+ "</b>");
+        notificationBo.setContent("您的评测 <b>" + posts.getTitle() + "</b>");
         notificationBo.setUserId(posts.getUserId());
-        if (PostsConstant.REJECTED.equals(bo.getStatus())){
-            notificationBo.setContent(notificationBo.getContent()+"未通过审核，请重新提交评测");
-        }else {
-            notificationBo.setContent(notificationBo.getContent()+"已通过审核，请查看");
+        if (PostsConstant.REJECTED.equals(bo.getStatus())) {
+            notificationBo.setContent(notificationBo.getContent() + "未通过审核，请重新提交评测");
+        } else {
+            notificationBo.setContent(notificationBo.getContent() + "已通过审核，请查看");
             notificationBo.setLink("/review/" + bo.getId());
         }
         notificationService.add(notificationBo);
-        postsMapper.updateById(MapstructUtils.convert(bo,Posts.class));
+        postsMapper.updateById(MapstructUtils.convert(bo, Posts.class));
     }
 
     /**

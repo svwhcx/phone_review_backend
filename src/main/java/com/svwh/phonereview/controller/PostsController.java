@@ -2,6 +2,8 @@ package com.svwh.phonereview.controller;
 
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.auth.annotation.IgnoreAuth;
+import com.svwh.phonereview.common.constant.CommentConstant;
+import com.svwh.phonereview.common.constant.FavoriteConstant;
 import com.svwh.phonereview.common.validation.AddGroup;
 import com.svwh.phonereview.domain.bo.CommentBo;
 import com.svwh.phonereview.domain.bo.FavoriteBo;
@@ -222,6 +224,7 @@ public class PostsController {
         FavoriteBo bo = new FavoriteBo();
         bo.setTargetId(commentId);
         bo.setUserId(UserInfoThreadLocal.get().getUserId());
+        bo.setType(FavoriteConstant.LIKE_COMMENT);
         favoriteService.delete(bo);
     }
 

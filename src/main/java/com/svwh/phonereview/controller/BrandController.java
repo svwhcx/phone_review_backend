@@ -118,4 +118,14 @@ public class BrandController {
     public List<PhoneModelVo> listModels(@PathVariable Long brandId){
         return brandService.listModels(brandId);
     }
+
+    /**
+     * 获取一个品牌的详细数据
+     * @param brandId 品牌id
+     * @return
+     */
+    @GetMapping("/{brandId}")
+    public BrandVo get(@PathVariable Long brandId){
+        return brandService.getById(brandId);
+    }
 }
