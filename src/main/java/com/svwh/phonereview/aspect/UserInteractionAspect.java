@@ -2,6 +2,7 @@ package com.svwh.phonereview.aspect;
 
 
 import com.svwh.phonereview.annotation.RecordInteraction;
+import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.service.UserInteractionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +11,12 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.ParameterNameDiscoverer;
+import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +48,9 @@ public class UserInteractionAspect {
     @AfterReturning(pointcut = "recordInteractionPointcut()", returning = "result")
     public void afterReturning(JoinPoint joinPoint, Object result) {
         try {
+            if(UserInfoThreadLocal.get().getUserId()==null){
+                return;
+            }
             // 获取方法签名
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
             Method method = signature.getMethod();
@@ -56,7 +62,7 @@ public class UserInteractionAspect {
             Map<String, Object> paramValues = getMethodParamValueMap(method, joinPoint.getArgs());
             
             // 从参数映射中获取用户ID和物品ID
-            Long userId = getParameterValue(paramValues, annotation.userIdParam(), Long.class);
+            Long userId = UserInfoThreadLocal.get().getUserId();
             Long itemId = getParameterValue(paramValues, annotation.itemIdParam(), Long.class);
             
             // 检查ID值有效性
@@ -95,11 +101,22 @@ public class UserInteractionAspect {
      */
     private Map<String, Object> getMethodParamValueMap(Method method, Object[] args) {
         Map<String, Object> paramValueMap = new HashMap<>();
-        Parameter[] parameters = method.getParameters();
         
-        for (int i = 0; i < parameters.length; i++) {
-            if (i < args.length) {
-                paramValueMap.put(parameters[i].getName(), args[i]);
+        // 使用Spring的DefaultParameterNameDiscoverer获取参数名
+        ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
+        String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
+        
+        if (parameterNames != null) {
+            for (int i = 0; i < parameterNames.length; i++) {
+                if (i < args.length && parameterNames[i] != null) {
+                    paramValueMap.put(parameterNames[i], args[i]);
+                }
+            }
+        } else {
+            // 降级处理：如果无法获取参数名，则使用索引作为键
+            log.warn("Unable to discover parameter names for method: {}", method.getName());
+            for (int i = 0; i < args.length; i++) {
+                paramValueMap.put("arg" + i, args[i]);
             }
         }
         
@@ -145,4 +162,4 @@ public class UserInteractionAspect {
         
         return null;
     }
-} 
+}

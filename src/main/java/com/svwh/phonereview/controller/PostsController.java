@@ -1,10 +1,12 @@
 package com.svwh.phonereview.controller;
 
+import com.svwh.phonereview.annotation.RecordInteraction;
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.auth.annotation.IgnoreAuth;
 import com.svwh.phonereview.auth.token.TokenInfo;
 import com.svwh.phonereview.common.constant.CommentConstant;
 import com.svwh.phonereview.common.constant.FavoriteConstant;
+import com.svwh.phonereview.common.constant.RecommendConstant;
 import com.svwh.phonereview.common.validation.AddGroup;
 import com.svwh.phonereview.domain.bo.CommentBo;
 import com.svwh.phonereview.domain.bo.FavoriteBo;
@@ -127,6 +129,9 @@ public class PostsController {
      */
     @GetMapping("/{id}")
     @IgnoreAuth
+    @RecordInteraction(actionType = RecommendConstant.interactionType.VIEW
+                     , itemType = RecommendConstant.itemType.POST,
+                      itemIdParam = "id")
     public PostsVo get(@NotNull @PathVariable Long id){
         return postsService.get(id);
     }
@@ -156,6 +161,9 @@ public class PostsController {
      * @param id
      */
     @PostMapping("/{id}/like")
+    @RecordInteraction(actionType = RecommendConstant.interactionType.LIKE
+                     , itemType = RecommendConstant.itemType.POST,
+                      itemIdParam = "id")
     public void like(@NotNull @PathVariable Long id){
         postsService.like(id);
     }
@@ -174,6 +182,9 @@ public class PostsController {
      * @param id
      */
     @PostMapping("/{id}/favorite")
+    @RecordInteraction(actionType = RecommendConstant.interactionType.FAVORITE
+                     , itemType = RecommendConstant.itemType.POST,
+                      itemIdParam = "id")
     public void favorite(@NotNull @PathVariable Long id){
         postsService.favorite(id);
     }
@@ -249,6 +260,10 @@ public class PostsController {
      * @param bo 评论的内容
      */
     @PostMapping("/{postId}/comments")
+    @RecordInteraction(actionType = RecommendConstant.interactionType.COMMENT
+                     , itemType = RecommendConstant.itemType.POST,
+                      itemIdParam="postId"
+    )
     public void addComment(@PathVariable Long postId,@RequestBody CommentBo bo){
         bo.setPostId(postId);
         commentService.add(bo);

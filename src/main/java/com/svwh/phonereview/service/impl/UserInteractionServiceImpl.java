@@ -7,6 +7,7 @@ import com.svwh.phonereview.mapper.UserInteractionMapper;
 import com.svwh.phonereview.service.UserInteractionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,10 +21,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class UserInteractionServiceImpl implements UserInteractionService {
 
-    private final UserInteractionMapper userInteractionMapper;
+public class UserInteractionServiceImpl implements UserInteractionService {
+    @Autowired
+    private  UserInteractionMapper userInteractionMapper;
     
     /**
      * 不同交互类型的权重
