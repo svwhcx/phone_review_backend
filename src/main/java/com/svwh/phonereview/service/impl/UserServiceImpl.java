@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void register(UserBo bo) {
+    public LoginVo register(UserBo bo) {
         // 判断用户名是否已经被注册
         LambdaQueryWrapper<User> uLqw = Wrappers.lambdaQuery();
         uLqw.eq(User::getUsername, bo.getUsername());
@@ -95,8 +95,14 @@ public class UserServiceImpl implements UserService {
         bo.setRole("user");
         bo.setCreateTime(LocalDateTime.now());
         bo.setPassword(PasswordUtils.encryption(bo.getPassword()));
+        bo.setAvatar("https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png");
         User user = MapstructUtils.convert(bo, User.class);
-        userMapper.insert(user);
+        int userId = userMapper.insert(user);
+        String token = authService.internalLogin(new AUser((long) userId, bo.getUsername(),bo.getRole() ));
+        LoginVo registerVo = new LoginVo();
+        user.setPassword(null);
+        registerVo.setToken(token);
+        registerVo.setUser(MapstructUtils.convert(user, UserVo.class));
         // 发送一条系统通知
         NotificationBo notificationBo = new NotificationBo();
         notificationBo.setType("system");
@@ -105,6 +111,7 @@ public class UserServiceImpl implements UserService {
         notificationBo.setTitle("系统通知");
         notificationBo.setUserId(user.getId());
         notificationService.add(notificationBo);
+        return registerVo;
     }
 
     @Override
