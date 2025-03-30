@@ -36,12 +36,14 @@ public class UserController {
 
     /**
      * 用户注册
+     *
      * @param ob
+     * @return
      */
     @PostMapping("/register")
     @IgnoreAuth
-    public void register(@Validated(AddGroup.class) @RequestBody UserBo bo){
-        userService.register(bo);
+    public LoginVo register(@Validated(AddGroup.class) @RequestBody UserBo bo){
+        return userService.register(bo);
     }
 
 

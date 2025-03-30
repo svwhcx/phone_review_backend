@@ -21,7 +21,7 @@ public interface UserService {
      */
     LoginVo login(UserBo bo);
 
-    void register(UserBo bo);
+    LoginVo register(UserBo bo);
 
     /**
      * 用户修改自己的密码
