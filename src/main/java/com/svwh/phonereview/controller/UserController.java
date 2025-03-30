@@ -76,7 +76,7 @@ public class UserController {
      * 密码用专用的密码接口
      * @param bo 需要修改的信息
      */
-    @PutMapping
+    @PutMapping("/info")
     public void updateUserInfo(@RequestBody UserBo bo){
         userService.updateUserInfo(bo);
     }

@@ -130,8 +130,8 @@ public class UserServiceImpl implements UserService {
             uLuw.set(User::getNickname, bo.getNickname());
         }
         uLuw.set(StringUtils.isNotBlank(bo.getAvatar()), User::getAvatar, bo.getAvatar());
-        uLuw.set(StringUtils.isBlank(bo.getEmail()), User::getEmail, bo.getEmail());
-        uLuw.set(StringUtils.isBlank(bo.getBio()), User::getBio, bo.getBio());
+        uLuw.set(StringUtils.isNotBlank(bo.getEmail()), User::getEmail, bo.getEmail());
+        uLuw.set(StringUtils.isNotBlank(bo.getBio()), User::getBio, bo.getBio());
         userMapper.update(uLuw);
     }
 

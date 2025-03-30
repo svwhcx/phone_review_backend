@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
+import com.svwh.phonereview.auth.token.TokenInfo;
 import com.svwh.phonereview.common.constant.CommentConstant;
 import com.svwh.phonereview.common.constant.FavoriteConstant;
 import com.svwh.phonereview.domain.bo.CommentBo;
@@ -79,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
         Set<Long> userIds = records.stream().map(CommentVo::getUserId).collect(Collectors.toSet());
         Set<Long> commentIds = records.stream().map(CommentVo::getId).collect(Collectors.toSet());
         twoCommentVos.forEach(item -> {
-            CommentVo parentComment = oneCommentMaps.get(item.getParentId());
+            CommentVo parentComment = oneCommentMaps.get(item.getRootId());
             if (parentComment != null) {
                 if (parentComment.getReplies() == null){
                     parentComment.setReplies(new ArrayList<>());
@@ -88,6 +89,8 @@ public class CommentServiceImpl implements CommentService {
             }
             userIds.add(item.getUserId());
             commentIds.add(item.getId());
+            // 保存id和评论值
+            oneCommentMaps.put(item.getId(),item);
         });
         // 二级评论组装完毕，现在要来组装用户数据。
         // 1. 先获取所有用户的id对应的用户数据。
@@ -102,9 +105,12 @@ public class CommentServiceImpl implements CommentService {
         Map<String, Boolean> userLikeMap = favorites.stream().collect(Collectors.toMap(f -> f.getUserId() + "." + f.getTargetId(), value -> true));
         // 2.2 分组计算count
         // 2. 开始组装用户数据和点赞数据
+        TokenInfo tokenInfo = UserInfoThreadLocal.get();
         records.forEach(item -> {
             // 判断当前用户是否点赞了这个评论
-            item.setIsLiked(userLikeMap.getOrDefault(item.getUserId() + "." + item.getId(), false));
+            if (tokenInfo != null){
+                item.setIsLiked(userLikeMap.getOrDefault(tokenInfo.getUserId() + "." + item.getId(), false));
+            }
             item.setLikes((long) favoriteMap.getOrDefault(item.getId(), new ArrayList<>()).size());
 
             item.setUserAvatar(userVoMap.get(item.getUserId()).getAvatar());
@@ -112,13 +118,18 @@ public class CommentServiceImpl implements CommentService {
             item.setUsername(userVoMap.get(item.getUserId()).getUsername());
             if (CollectionUtils.isNotEmpty(item.getReplies())) {
                 item.getReplies().forEach(twoComment -> {
-                    item.setIsLiked(userLikeMap.getOrDefault(item.getUserId() + "." + item.getId(), false));
-                    item.setLikes((long) favoriteMap.getOrDefault(item.getId(), new ArrayList<>()).size());
-                    item.setReplyUserAvatar(userVoMap.get(twoComment.getUserId()).getAvatar());
-                    item.setReplyUserNickname(userVoMap.get(twoComment.getUserId()).getNickname());
-                    item.setReplyUserUsername(userVoMap.get(twoComment.getUserId()).getUsername());
-                    twoComment.setReplyToUserId(userVoMap.get(twoComment.getParentId()).getId());
-                    twoComment.setReplyTo(userVoMap.get(twoComment.getParentId()).getUsername());
+                    if (tokenInfo != null){
+                        twoComment.setIsLiked(userLikeMap.getOrDefault(tokenInfo.getUserId() + "." + twoComment.getId(), false));
+
+                    }
+                    twoComment.setLikes((long) favoriteMap.getOrDefault(twoComment.getId(), new ArrayList<>()).size());
+                    twoComment.setReplyUserAvatar(userVoMap.get(twoComment.getUserId()).getAvatar());
+                    twoComment.setReplyUserNickname(userVoMap.get(twoComment.getUserId()).getNickname());
+                    twoComment.setReplyUserUsername(userVoMap.get(twoComment.getUserId()).getUsername());
+                    // 这里应该是寻找reply的Comment的id
+
+                    twoComment.setReplyToUserId(oneCommentMaps.get(twoComment.getParentId()).getUserId());
+                    twoComment.setReplyTo(userVoMap.get(oneCommentMaps.get(twoComment.getParentId()).getUserId()).getUsername());
                     twoComment.setReplyUserAvatar(userVoMap.get(twoComment.getUserId()).getAvatar());
                     twoComment.setUsername(userVoMap.get(twoComment.getUserId()).getUsername());
                 });

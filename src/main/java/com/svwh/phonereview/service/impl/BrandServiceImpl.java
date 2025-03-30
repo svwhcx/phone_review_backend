@@ -77,4 +77,9 @@ public class BrandServiceImpl implements BrandService {
         return phoneModelService.queryPage(bo,new PageQuery()).getRecords();
     }
 
+    @Override
+    public BrandVo getById(Long brandId) {
+        return brandMapper.selectVoById(brandId);
+    }
+
 }

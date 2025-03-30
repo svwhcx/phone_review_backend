@@ -42,9 +42,7 @@ public class AuthAspect {
         MethodSignature signature = (MethodSignature) joinpoint.getSignature();
         Method method = signature.getMethod();
         // 如果一个接口需要忽略用户认证，则不做验证
-        if(method.isAnnotationPresent(IgnoreAuth.class)){
-            return;
-        }
+
         // 从request中获取token
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest servletRequest = Objects.requireNonNull(requestAttributes).getRequest();
@@ -58,6 +56,9 @@ public class AuthAspect {
             }
             UserInfoThreadLocal.set(tokenInfo);
         }catch (Exception e){
+            if(method.isAnnotationPresent(IgnoreAuth.class)){
+                return;
+            }
             throw new BusinessException(DefaultErrorCode.AUTH_FAIL);
         }
     }
