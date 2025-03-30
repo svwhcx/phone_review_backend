@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
         LambdaQueryWrapper<User> uLqw = Wrappers.lambdaQuery();
         uLqw.eq(User::getUsername, bo.getUsername())
                 .eq(User::getPassword, PasswordUtils.encryption(bo.getPassword()))
-                .select(User::getId,User::getUsername,User::getNickname,User::getCreateTime,User::getBio,User::getRole,User::getStatus);
+                .select(User::getId,User::getUsername,User::getNickname,User::getCreateTime,User::getBio,User::getRole,User::getStatus,User::getAvatar);
         UserVo vo = userMapper.selectVoOne(uLqw);
         if (vo == null) {
             throw new BusinessException(DefaultErrorCode.LOGIN_FAIL);
