@@ -421,4 +421,8 @@ public class PostsServiceImpl implements PostsService {
             throw new BusinessException(DefaultErrorCode.ILLEGAL_OPERATION);
         }
     }
+
+//    private List<PostsVo> combinePosts( List<Long> postIds) {
+//        List<
+//    }
 }

@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -28,3 +28,21 @@ application:
     path: D:/GraduationDesign/phone_review/images/
   url:
     prefix: http://localhost:8080/images/
+# 配置邮件发送账号
+mail-service:
+  mail-infos:
+    - host-name: smtp.qq.com
+      username: cmanager@qq.com
+      password: ccfsywtccmjxeahj
+      from-sender: cmanager@qq.com
+      sender-rank: 3
+    - host-name: smtp.qq.com
+      username: 480252715@qq.com
+      password: amuixyxrpdbmbhjb
+      from-sender: 480252715@qq.com
+      sender-rank: 4
+    - host-name: smtp.163.com
+      username: cxkchenxin@163.com
+      password: WYHFMEUWWRSBEXNQ
+      from-sender: cxkchenxin@163.com
+      sender-rank: 8

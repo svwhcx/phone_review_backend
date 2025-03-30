@@ -121,5 +121,10 @@ public class PostsBo {
      */
     private String keyword;
 
+    /**
+     * 排序字段，例如：create_time DESC
+     */
+    private String orderBy;
+
     private List<String> fileList;
 }

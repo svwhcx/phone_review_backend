@@ -2,6 +2,7 @@ package com.svwh.phonereview.controller;
 
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.auth.annotation.IgnoreAuth;
+import com.svwh.phonereview.auth.token.TokenInfo;
 import com.svwh.phonereview.common.constant.CommentConstant;
 import com.svwh.phonereview.common.constant.FavoriteConstant;
 import com.svwh.phonereview.common.validation.AddGroup;
@@ -13,13 +14,17 @@ import com.svwh.phonereview.domain.vo.CommentVo;
 import com.svwh.phonereview.domain.vo.PostsVo;
 import com.svwh.phonereview.query.PageQuery;
 import com.svwh.phonereview.query.PageVo;
+import com.svwh.phonereview.query.RecommendQuery;
 import com.svwh.phonereview.service.CommentService;
 import com.svwh.phonereview.service.FavoriteService;
 import com.svwh.phonereview.service.PostsService;
+import com.svwh.phonereview.service.RecommendationService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 
 /**
  * @description
@@ -34,6 +39,7 @@ public class PostsController {
     private final PostsService postsService;
     private final CommentService commentService;
     private final FavoriteService favoriteService;
+    private final RecommendationService recommendationService;
 
     /**
      * 查询所有的评测列表
@@ -48,15 +54,62 @@ public class PostsController {
     }
 
     /**
-     * 获取推荐的评测列表（分页）
-     * @param bo
+     * 获取推荐列表(旧方法，已弃用，保留向后兼容)
      * @param pageQuery
      * @return
      */
+  /*  @GetMapping("/recommend")
+    @IgnoreAuth
+    public PageVo<PostsVo> getRecommendList(PageQuery pageQuery){
+        return postsService.getRecommendList(pageQuery);
+    }*/
+    
+    /**
+     * 获取个性化推荐文章
+     * 根据用户历史行为生成个性化推荐
+     * @param pageQuery 分页参数
+     * @return 个性化推荐的文章列表
+     */
     @GetMapping("/recommend")
-    public PageVo<PostsVo> getRecommendList(PostsBo bo, PageQuery pageQuery){
-        return postsService.getRecommendList(bo,pageQuery);
+    public PageVo<PostsVo> getPersonalizedRecommendations(RecommendQuery pageQuery) {
+        TokenInfo tokenInfo = UserInfoThreadLocal.get();
+        Long userId = tokenInfo.getUserId();
+        return recommendationService.getPersonalizedRecommendations(userId, pageQuery.getPage(), pageQuery.getLimit());
     }
+
+    
+    /**
+     * 获取与指定文章相似的文章推荐
+     * @param postId 文章ID
+     * @param pageQuery 分页参数
+     * @return 相似文章列表
+     */
+    @GetMapping("/{postId}/similar")
+    @IgnoreAuth
+    public PageVo<PostsVo> getSimilarPosts(@PathVariable Long postId, RecommendQuery pageQuery) {
+        Long userId = null;
+        try {
+            userId = UserInfoThreadLocal.get().getUserId();
+        } catch (Exception e) {
+            // 用户未登录，使用匿名推荐
+        }
+        return recommendationService.getSimilarPosts(userId, postId, pageQuery.getPage(), pageQuery.getLimit());
+    }
+
+    
+    /**
+     * 获取匿名用户的推荐文章
+     * 用于未登录用户的通用推荐
+     * @param pageQuery 分页参数
+     * @return 推荐文章列表
+     */
+    @GetMapping("/anonymous-recommend")
+    @IgnoreAuth
+    public PageVo<PostsVo> getAnonymousRecommendations(RecommendQuery pageQuery) {
+        return recommendationService.getAnonymousRecommendations(pageQuery.getPage(), pageQuery.getLimit());
+    }
+
+
 
     /**
      * 发布一篇帖子
