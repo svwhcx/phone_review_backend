@@ -2,6 +2,7 @@ package com.svwh.phonereview.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -244,7 +245,30 @@ public class PostsServiceImpl implements PostsService {
         lambdaQueryWrapper.orderByDesc(Posts::getCreateTime);
         lambdaQueryWrapper.eq(Posts::getUserId, userId);
         // 条件过滤
-        return postsMapper.selectVoPage(pageQuery.buildMybatisPage(), lambdaQueryWrapper);
+        PageVo<PostsVo> pageVo = postsMapper.selectVoPage(pageQuery.buildMybatisPage(), lambdaQueryWrapper);
+        if (CollectionUtils.isEmpty(pageVo.getRecords())){
+            return pageVo;
+        }
+        // 组装数据
+        List<Long> list = pageVo.getRecords().stream().map(PostsVo::getId).toList();
+        LambdaQueryWrapper<Favorite> fLqw = Wrappers.lambdaQuery();
+        fLqw.in(Favorite::getTargetId, list)
+                .eq(Favorite::getType, FavoriteConstant.LIKE_POST)
+                .select(Favorite::getTargetId, Favorite::getType,Favorite::getUserId);
+        List<FavoriteVo> favoriteVos = favoriteMapper.selectVoList(fLqw);
+        // 获取评论数
+        LambdaQueryWrapper<Comment> cLqw = Wrappers.lambdaQuery();
+        cLqw.in(Comment::getPostId, list)
+                .eq(Comment::getStatus, CommentConstant.APPROVED)
+                .eq(Comment::getIsDelete, false)
+                .select(Comment::getPostId, Comment::getId);
+        List<CommentVo> commentVos = commentMapper.selectVoList(cLqw);
+        Map<Long, Long> commentCountMap = commentVos.stream().collect(Collectors.groupingBy(CommentVo::getPostId, Collectors.counting()));
+        pageVo.getRecords().forEach(postVo -> {
+            postVo.setComments(commentCountMap.getOrDefault(postVo.getId(), 0L));
+            postVo.setLikeCount(favoriteVos.stream().filter(item -> item.getTargetId().equals(postVo.getId())).count());
+        });
+        return pageVo;
     }
 
     @Override

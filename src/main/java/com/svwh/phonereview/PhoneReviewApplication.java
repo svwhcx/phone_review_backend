@@ -3,7 +3,7 @@ package com.svwh.phonereview;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"com.svwh.phonereview.*"})
+@SpringBootApplication(scanBasePackages = {"com.svwh.phonereview.*","com.svwh.mailservice.*"})
 public class PhoneReviewApplication {
 
     public static void main(String[] args) {

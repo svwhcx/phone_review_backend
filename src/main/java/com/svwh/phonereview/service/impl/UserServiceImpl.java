@@ -1,17 +1,21 @@
 package com.svwh.phonereview.service.impl;
 
+import cn.hutool.core.math.MathUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.svwh.phonereview.auth.IAuthService;
 import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.auth.token.AUser;
+import com.svwh.phonereview.auth.token.TokenInfo;
 import com.svwh.phonereview.common.constant.FavoriteConstant;
 import com.svwh.phonereview.domain.bo.NotificationBo;
 import com.svwh.phonereview.domain.bo.UserBo;
 import com.svwh.phonereview.domain.entity.Favorite;
+import com.svwh.phonereview.domain.entity.Posts;
 import com.svwh.phonereview.domain.entity.User;
 import com.svwh.phonereview.domain.vo.LoginVo;
 import com.svwh.phonereview.domain.vo.PostsVo;
@@ -27,6 +31,8 @@ import com.svwh.phonereview.service.NotificationService;
 import com.svwh.phonereview.service.UserService;
 import com.svwh.phonereview.utils.MapstructUtils;
 import com.svwh.phonereview.utils.PasswordUtils;
+import com.svwh.phonereview.verifycode.IVerifyCode;
+import com.svwh.phonereview.verifycode.VerifyCodeRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +58,7 @@ public class UserServiceImpl implements UserService {
     private final FavoriteMapper favoriteMapper;
     private final PostsMapper postsMapper;
     private final NotificationService notificationService;
+    private final IVerifyCode iVerifyCode;
 
 
     @Override
@@ -59,7 +66,7 @@ public class UserServiceImpl implements UserService {
         LambdaQueryWrapper<User> uLqw = Wrappers.lambdaQuery();
         uLqw.eq(User::getUsername, bo.getUsername())
                 .eq(User::getPassword, PasswordUtils.encryption(bo.getPassword()))
-                .select(User::getId,User::getUsername,User::getNickname,User::getRole,User::getStatus);
+                .select(User::getId,User::getUsername,User::getNickname,User::getCreateTime,User::getBio,User::getRole,User::getStatus);
         UserVo vo = userMapper.selectVoOne(uLqw);
         if (vo == null) {
             throw new BusinessException(DefaultErrorCode.LOGIN_FAIL);
@@ -119,7 +126,7 @@ public class UserServiceImpl implements UserService {
         Long userId = UserInfoThreadLocal.get().getUserId();
         User user = userMapper.selectById(userId);
         bo.setOldPassword(PasswordUtils.encryption(bo.getOldPassword()));
-        if (user.getPassword().equals(bo.getOldPassword())) {
+        if (user.getPassword().equals(PasswordUtils.encryption(bo.getOldPassword()))) {
             throw new BusinessException(DefaultErrorCode.OLD_PASSWORD_ERROR);
         }
         LambdaUpdateWrapper<User> uLuw = Wrappers.lambdaUpdate();
@@ -232,6 +239,64 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserVo getUserStats() {
-        return null;
+        TokenInfo tokenInfo = UserInfoThreadLocal.get();
+        UserVo userVo = new UserVo();
+        if (tokenInfo == null){
+            return userVo;
+        }
+        // 获取帖子总数
+        // 获取自己的收藏量
+        LambdaQueryWrapper<Favorite> fLqw = Wrappers.lambdaQuery();
+        fLqw.eq(Favorite::getUserId, tokenInfo.getUserId())
+                .eq(Favorite::getType, FavoriteConstant.FAVORITE_POST);
+        Long favoriteCount = favoriteMapper.selectCount(fLqw);
+        userVo.setFavoriteCount(favoriteCount);
+        // 获取自己的帖子总数
+        LambdaQueryWrapper<Posts> pLqw = Wrappers.lambdaQuery();
+        pLqw.eq(Posts::getUserId, tokenInfo.getUserId())
+                .select(Posts::getId,Posts::getViews);
+        List<Posts> posts = postsMapper.selectList(pLqw);
+        long likes = 0;
+        if (CollectionUtils.isNotEmpty(posts)){
+            long views = posts.stream().map(Posts::getViews).count();
+            userVo.setViews(views);
+            userVo.setPostCount((long)posts.size());
+            // 获取帖子对应的点赞量
+            LambdaQueryWrapper<Favorite> fLqw2 = Wrappers.lambdaQuery();
+            fLqw2.eq(Favorite::getType, FavoriteConstant.LIKE_POST)
+                    .in(Favorite::getTargetId, posts.stream().map(Posts::getId).toList());
+            likes = favoriteMapper.selectCount(fLqw2);
+        }
+
+        // 获取评论对应的点赞量，这个工程量有点大，只有写sql了
+        long commentLikeCount = favoriteMapper.countCommentLike(tokenInfo.getUserId());
+        userVo.setLikeCount(likes+commentLikeCount);
+        return userVo;
+    }
+
+    @Override
+    public void bindEmail(VerifyCodeRequest verifyCodeRequest) {
+        // 先验证邮箱账号是否正确
+        if (!iVerifyCode.checkVerifyCode(verifyCodeRequest)){
+            throw new BusinessException(DefaultErrorCode.VERIFICATION_ERROR);
+        }
+        Long userId = UserInfoThreadLocal.get().getUserId();
+        LambdaUpdateWrapper<User> uLuw =Wrappers.lambdaUpdate();
+        uLuw.eq(User::getId,userId)
+                .set(User::getEmail,verifyCodeRequest.getAddr());
+        userMapper.update(uLuw);
+    }
+
+    @Override
+    public void resetPassword(UserBo bo, VerifyCodeRequest verifyCodeRequest) {
+        // 1. 验证验证码是否正确
+        if (!iVerifyCode.checkVerifyCode(verifyCodeRequest)){
+            throw new BusinessException(DefaultErrorCode.VERIFICATION_ERROR);
+        }
+        // 2. 通过验证根据邮箱验证码来进行密码重置
+        LambdaUpdateWrapper<User> uLuw = Wrappers.lambdaUpdate();
+        uLuw.eq(User::getEmail, verifyCodeRequest.getAddr())
+                .set(User::getPassword, PasswordUtils.encryption(bo.getPassword()));
+        userMapper.update(uLuw);
     }
 }

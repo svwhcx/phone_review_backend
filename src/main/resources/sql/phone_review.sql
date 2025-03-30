@@ -11,7 +11,7 @@
  Target Server Version : 50732
  File Encoding         : 65001
 
- Date: 30/03/2025 12:10:14
+ Date: 30/03/2025 16:21:13
 */
 
 SET NAMES utf8mb4;
@@ -125,7 +125,7 @@ CREATE TABLE `favorite`  (
   `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
   `type` int(11) NULL DEFAULT NULL COMMENT '点赞的类型(0:评论、1: 帖子）',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 19 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '点赞表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '点赞表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of favorite
@@ -140,6 +140,7 @@ INSERT INTO `favorite` VALUES (14, 1, 1, '2025-03-30 10:20:49', 3);
 INSERT INTO `favorite` VALUES (15, 1, 1, '2025-03-30 10:21:04', 2);
 INSERT INTO `favorite` VALUES (16, 1, 11, '2025-03-30 11:17:24', 3);
 INSERT INTO `favorite` VALUES (18, 1, 1, '2025-03-30 11:30:31', 1);
+INSERT INTO `favorite` VALUES (19, 1, 14, '2025-03-30 12:26:11', 3);
 
 -- ----------------------------
 -- Table structure for notification
@@ -155,7 +156,7 @@ CREATE TABLE `notification`  (
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '通知的标题',
   `user_id` bigint(20) NULL DEFAULT NULL COMMENT '用户id',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 52 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '系统通知表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 53 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '系统通知表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of notification
@@ -210,6 +211,7 @@ INSERT INTO `notification` VALUES (48, '用户 <b>test</b> 点赞了您的评论
 INSERT INTO `notification` VALUES (49, '用户 <b>test</b> 点赞了您的评论<b></b>', '2025-03-30 11:17:24', 1, 'comment_like', '/review/1', '您的评论被点赞了', 5);
 INSERT INTO `notification` VALUES (50, '用户 <b>test</b> 点赞了您的评测 asdfasdfasdfasdf', '2025-03-30 11:30:17', 1, 'post_like', '/review/1', '您的评测被点赞了', 5);
 INSERT INTO `notification` VALUES (51, '用户 <b>test</b> 点赞了您的评测 asdfasdfasdfasdf', '2025-03-30 11:30:31', 1, 'post_like', '/review/1', '您的评测被点赞了', 5);
+INSERT INTO `notification` VALUES (52, '用户 <b>test</b> 点赞了您的评论<b></b>', '2025-03-30 12:26:11', 1, 'comment_like', '/review/1', '您的评论被点赞了', 5);
 
 -- ----------------------------
 -- Table structure for phone
@@ -314,7 +316,7 @@ CREATE TABLE `posts`  (
 -- ----------------------------
 -- Records of posts
 -- ----------------------------
-INSERT INTO `posts` VALUES (1, 5, 'asdfasdfasdfasdf', 'adsssssssssssssssssssssssssssssssssssssssssssssasdfffffffffffffffffffff', 4, '2025-03-29 21:00:01', NULL, NULL, 8, 1, 'http://localhost:8080/images/49ea10ad-e5ad-4e17-8ddb-400d1a571526.jpg', 4, 3, 1, 3, 0, 2, 2, 2, NULL);
+INSERT INTO `posts` VALUES (1, 5, 'asdfasdfasdfasdf', 'adsssssssssssssssssssssssssssssssssssssssssssssasdfffffffffffffffffffff', 4, '2025-03-29 21:00:01', NULL, NULL, 17, 1, 'http://localhost:8080/images/49ea10ad-e5ad-4e17-8ddb-400d1a571526.jpg', 4, 3, 1, 3, 0, 2, 2, 2, NULL);
 
 -- ----------------------------
 -- Table structure for user
@@ -340,8 +342,8 @@ CREATE TABLE `user`  (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES (1, 'test', 'test', 'user', 'C9D21E89DC04F9F2B446B4FBDAFDF4B8', 'http://localhost:8080/images/adc4f2a0-5db7-4c69-aa69-faec2f8eae56.jpg', 0, 1, NULL, NULL, 'asdfasdfasd', 1, 0);
-INSERT INTO `user` VALUES (2, 'admin', 'admin', 'admin', 'C9D21E89DC04F9F2B446B4FBDAFDF4B8', 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png', 0, 1, NULL, NULL, NULL, 1, 0);
-INSERT INTO `user` VALUES (5, 'svwhcx', 'svwh', 'admin', 'C9D21E89DC04F9F2B446B4FBDAFDF4B8', 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png', 0, 1, NULL, '1548222103@qq.com', NULL, 1, 0);
+INSERT INTO `user` VALUES (1, 'test', 'test', 'user', 'CF70D5A6EDB26657B165571DE8CCB45C', 'http://localhost:8080/images/adc4f2a0-5db7-4c69-aa69-faec2f8eae56.jpg', 0, 1, '2025-03-04 13:48:26', '2606714301@qq.com', 'asdfasdfasd', 1, 0);
+INSERT INTO `user` VALUES (2, 'admin', 'admin', 'admin', 'C9D21E89DC04F9F2B446B4FBDAFDF4B8', 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png', 0, 1, '2025-03-27 13:48:30', NULL, NULL, 1, 0);
+INSERT INTO `user` VALUES (5, 'svwhcx', 'svwh', 'admin', 'C9D21E89DC04F9F2B446B4FBDAFDF4B8', 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png', 0, 1, '2025-03-27 13:48:33', '1548222103@qq.com', '个人简介测试', 1, 0);
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -16,6 +16,7 @@ import com.svwh.phonereview.query.PageVo;
 import com.svwh.phonereview.service.CommentService;
 import com.svwh.phonereview.service.PostsService;
 import com.svwh.phonereview.service.UserService;
+import com.svwh.phonereview.verifycode.VerifyCodeRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -72,6 +73,12 @@ public class UserController {
         userService.updatePassword(bo);
     }
 
+    @PutMapping("/password/find")
+    @IgnoreAuth
+    public void resetPassword(@RequestBody UserBo bo,VerifyCodeRequest verifyCodeRequest){
+        userService.resetPassword(bo,verifyCodeRequest);
+    }
+
     /**
      * 用户修改自己的个人信息<p>
      * 这里只能修改用户的nickname、avatar、邮箱以及bio个人简介<p>
@@ -83,6 +90,14 @@ public class UserController {
         userService.updateUserInfo(bo);
     }
 
+    /**
+     * 用户绑定邮箱
+     * @param verifyCodeRequest 待绑定的邮箱账号以及验证码信息
+     */
+    @PutMapping("/bindEmail")
+    public void bindEmail(@RequestBody VerifyCodeRequest verifyCodeRequest){
+        userService.bindEmail(verifyCodeRequest);
+    }
 
     /**
      * 管理员添加一个用户到系统中
@@ -181,4 +196,8 @@ public class UserController {
     public UserVo getUserStats(){
         return userService.getUserStats();
     }
+
+
+
+
 }

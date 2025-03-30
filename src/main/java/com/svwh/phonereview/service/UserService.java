@@ -6,6 +6,7 @@ import com.svwh.phonereview.domain.vo.PostsVo;
 import com.svwh.phonereview.domain.vo.UserVo;
 import com.svwh.phonereview.query.PageQuery;
 import com.svwh.phonereview.query.PageVo;
+import com.svwh.phonereview.verifycode.VerifyCodeRequest;
 
 /**
  * @description
@@ -93,4 +94,7 @@ public interface UserService {
      */
     UserVo getUserStats();
 
+    void bindEmail(VerifyCodeRequest verifyCodeRequest);
+
+    void resetPassword(UserBo bo, VerifyCodeRequest verifyCodeRequest);
 }

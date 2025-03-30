@@ -83,6 +83,24 @@ public class UserVo  {
     private Integer status;
 
 
+    /**
+     * 发布的帖子数量
+     */
+    private Long postCount;
 
+    /**
+     * 帖子被点赞的数量
+     */
+    private Long likeCount;
+
+    /**
+     * 收藏的帖子数
+     */
+    private Long favoriteCount;
+
+    /**
+     * 所有帖子的阅读量。
+     */
+    private Long views;
 
 }

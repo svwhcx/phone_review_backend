@@ -24,33 +24,33 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-<!--        hutool工具类-->
+        <!--        hutool工具类-->
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-core</artifactId>
             <version>5.8.30</version>
         </dependency>
-<!--        mybatisPlus-->
+        <!--        mybatisPlus-->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
             <version>3.5.11</version>
         </dependency>
-<!-- 分页插件-->
+        <!-- 分页插件-->
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-jsqlparser-4.9</artifactId>
             <version>3.5.11</version>
         </dependency>
 
-<!--        mapstruct-plus-->
+        <!--        mapstruct-plus-->
         <dependency>
             <groupId>io.github.linpeilie</groupId>
             <artifactId>mapstruct-plus-spring-boot-starter</artifactId>
             <version>${mapstruct-plus.version}</version>
         </dependency>
 
-<!--        aop-->
+        <!--        aop-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
@@ -64,13 +64,13 @@
         </dependency>
 
 
-<!--        mysql-->
+        <!--        mysql-->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
-<!--        druid 数据库连接池-->
+        <!--        druid 数据库连接池-->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
@@ -85,8 +85,7 @@
         </dependency>
 
 
-
-<!--        jaxb-api -->
+        <!--        jaxb-api -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
@@ -96,6 +95,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+
+        <!--        邮件发送服务-->
+        <dependency>
+            <groupId>com.github.cx2002</groupId>
+            <artifactId>mail-service-spring-boot-starter</artifactId>
+            <version>v1.0.0</version>
         </dependency>
     </dependencies>
     <dependencyManagement>
@@ -109,6 +116,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://www.jitpack.io</url>
+        </repository>
+    </repositories>
+
 
     <build>
         <plugins>
@@ -143,12 +158,12 @@
                     <skip>true</skip>
                 </configuration>
                 <executions>
-<!--                    <execution>-->
-<!--                        <id>repackage</id>-->
-<!--                        <goals>-->
-<!--                            <goal>repackage</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
+                    <!--                    <execution>-->
+                    <!--                        <id>repackage</id>-->
+                    <!--                        <goals>-->
+                    <!--                            <goal>repackage</goal>-->
+                    <!--                        </goals>-->
+                    <!--                    </execution>-->
                 </executions>
             </plugin>
         </plugins>
