@@ -267,6 +267,10 @@ public class PostsServiceImpl implements PostsService {
         pageVo.getRecords().forEach(postVo -> {
             postVo.setComments(commentCountMap.getOrDefault(postVo.getId(), 0L));
             postVo.setLikeCount(favoriteVos.stream().filter(item -> item.getTargetId().equals(postVo.getId())).count());
+            // 分割图片
+            if (StringUtils.isNotBlank(postVo.getImages())) {
+                postVo.setFileList(new ArrayList<>(List.of(postVo.getImages().split(","))));
+            }
         });
         return pageVo;
     }

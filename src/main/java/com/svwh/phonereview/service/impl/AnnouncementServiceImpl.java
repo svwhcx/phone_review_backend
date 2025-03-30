@@ -3,6 +3,7 @@ package com.svwh.phonereview.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.svwh.phonereview.common.constant.AnnouncementConstant;
 import com.svwh.phonereview.domain.bo.AnnouncementBo;
 import com.svwh.phonereview.domain.entity.Announcement;
 import com.svwh.phonereview.domain.vo.AnnouncementVo;
@@ -12,11 +13,16 @@ import com.svwh.phonereview.mapper.AnnouncementMapper;
 import com.svwh.phonereview.query.PageQuery;
 import com.svwh.phonereview.query.PageVo;
 import com.svwh.phonereview.service.AnnouncementService;
+import com.svwh.phonereview.task.Task;
+import com.svwh.phonereview.task.manager.ITaskManager;
 import com.svwh.phonereview.utils.MapstructUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 
 /**
@@ -29,20 +35,39 @@ import java.util.List;
 public class AnnouncementServiceImpl implements AnnouncementService {
 
     private final AnnouncementMapper announcementMapper;
+    private final ITaskManager iTaskManager;
 
     @Override
+    @Transactional
     public void add(AnnouncementBo bo) {
-        // 公告发布的时候，需要判断是否立即发布、定时发布、不发布等等
-        if (bo.getStatus() == "published") {
-            bo.setCreateTime(LocalDateTime.now());
+        if (AnnouncementConstant.LATER.equals(bo.getStatus())){
+            bo.setPublishTime(LocalDateTime.now());
+            bo.setStatus(AnnouncementConstant.PUBLISHED);
         }
-        if (bo.getStatus() == "scheduled") {
-            // 定时发布
-            // TODO
-        }
+
         bo.setCreateTime(LocalDateTime.now());
         Announcement announcement = MapstructUtils.convert(bo, Announcement.class);
         announcementMapper.insert(announcement);
+
+        // 公告发布的时候，需要判断是否立即发布、定时发布、不发布等等
+        if (AnnouncementConstant.SCHEDULED.equals(bo.getStatus())){
+            bo.setStatus(AnnouncementConstant.SCHEDULED);
+            // 这里要进行转换
+            Task task = new Task();
+            task.setAnnouncementId(announcement.getId());
+            task.setStatus(AnnouncementConstant.PUBLISHED);
+            // 将localDatetime转换成毫秒值
+            task.setDelayTime(bo.getPublishTime().toInstant(ZoneOffset.of("+8")).toEpochMilli());
+            iTaskManager.addTask(task);
+        }
+        if (bo.getExpireTime() != null){
+            Task task = new Task();
+            task.setAnnouncementId(announcement.getId());
+            task.setStatus(AnnouncementConstant.EXPIRED);
+            task.setDelayTime(bo.getExpireTime().toInstant(ZoneOffset.of("+8")).toEpochMilli());
+            iTaskManager.addTask(task);
+        }
+
     }
 
     @Override

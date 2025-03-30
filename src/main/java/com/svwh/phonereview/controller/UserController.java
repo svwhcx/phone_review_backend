@@ -1,6 +1,8 @@
 package com.svwh.phonereview.controller;
 
+import com.svwh.phonereview.auth.UserInfoThreadLocal;
 import com.svwh.phonereview.auth.annotation.IgnoreAuth;
+import com.svwh.phonereview.auth.token.TokenInfo;
 import com.svwh.phonereview.common.validation.AddGroup;
 import com.svwh.phonereview.common.validation.ChangePassword;
 import com.svwh.phonereview.domain.bo.PostsBo;
@@ -18,6 +20,7 @@ import com.svwh.phonereview.service.PostsService;
 import com.svwh.phonereview.service.UserService;
 import com.svwh.phonereview.verifycode.VerifyCodeRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.el.parser.Token;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -198,6 +201,39 @@ public class UserController {
     }
 
 
+    /**
+     * 获取指定用户的个人信息
+     * @param userId
+     * @return
+     */
+    @GetMapping("/profile/{userId}")
+    @IgnoreAuth
+    public UserVo getUserProfile(@PathVariable Long userId){
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setUserId(userId);
+        UserInfoThreadLocal.set(tokenInfo);
+        UserVo userStats = userService.getUserStats();
+        UserVo result = userService.getUserInfo();
+        result.setLikeCount(userStats.getLikeCount());
+        result.setPostCount(userStats.getPostCount());
+        result.setViews(userStats.getViews());
+        return result;
+    }
 
+    /**
+     * 获取指定用户的评测列表
+     * @param userId 指定用户的id
+     * @param pageQuery 分页参数
+     * @return
+     */
+    @GetMapping("/profile/{userId}/posts")
+    @IgnoreAuth
+    public PageVo<PostsVo> getUserPosts(@PathVariable Long userId,PageQuery pageQuery){
+        PostsBo postsBo = new PostsBo();
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setUserId(userId);
+        UserInfoThreadLocal.set(tokenInfo);
+        return postsService.queryPageCurrentUser(postsBo,pageQuery);
+    }
 
 }
