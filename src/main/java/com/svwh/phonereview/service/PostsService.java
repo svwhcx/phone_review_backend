@@ -5,6 +5,8 @@ import com.svwh.phonereview.domain.vo.PostsVo;
 import com.svwh.phonereview.query.PageQuery;
 import com.svwh.phonereview.query.PageVo;
 
+import java.util.List;
+
 /**
  * @description
  * @Author cxk
@@ -38,6 +40,13 @@ public interface PostsService {
      * @return
      */
     PageVo<PostsVo> queryPage(PostsBo bo, PageQuery pageQuery);
+
+    /**
+     * 组装评测的基本数据
+     * @param pageVo
+     * @return
+     */
+    void combinePostData(List<PostsVo> postsVos);
 
     /**
      * 获取推荐的评测列表

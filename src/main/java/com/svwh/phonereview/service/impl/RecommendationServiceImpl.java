@@ -236,7 +236,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         // 获取热门文章列表
         List<PostsVo> popularPosts = getPopularPostsFromService(page, pageSize);
-        
+        postsService.combinePostData(popularPosts);
         // 构建推荐结果
         RecommendationDTO result = new RecommendationDTO();
         result.setPage(page);
