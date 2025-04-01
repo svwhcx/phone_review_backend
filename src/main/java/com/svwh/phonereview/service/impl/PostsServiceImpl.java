@@ -70,10 +70,16 @@ public class PostsServiceImpl implements PostsService {
 
     @Override
     public void delete(Long id) {
+
         // 验证是否是当前的用户
         valid(id);
-        // TODO 联动删除对应的评论和收藏
         postsMapper.deleteById(id);
+        commentMapper.delete(Wrappers.lambdaQuery(Comment.class)
+                .eq(Comment::getPostId, id));
+        favoriteMapper.delete(Wrappers.lambdaQuery(Favorite.class)
+                .eq(Favorite::getTargetId, id)
+                .eq(Favorite::getType, FavoriteConstant.FAVORITE_POST)
+        );
     }
 
     @Override

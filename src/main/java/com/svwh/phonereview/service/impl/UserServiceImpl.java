@@ -104,8 +104,8 @@ public class UserServiceImpl implements UserService {
         bo.setPassword(PasswordUtils.encryption(bo.getPassword()));
         bo.setAvatar("https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png");
         User user = MapstructUtils.convert(bo, User.class);
-        int userId = userMapper.insert(user);
-        String token = authService.internalLogin(new AUser((long) userId, bo.getUsername(),bo.getRole() ));
+        userMapper.insert(user);
+        String token = authService.internalLogin(new AUser(user.getId(), bo.getUsername(),bo.getRole() ));
         LoginVo registerVo = new LoginVo();
         user.setPassword(null);
         registerVo.setToken(token);
