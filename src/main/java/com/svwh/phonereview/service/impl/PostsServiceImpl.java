@@ -162,19 +162,22 @@ public class PostsServiceImpl implements PostsService {
             pLqw.eq(Posts::getBrandId, bo.getBrandId());
         }
         PageVo<PostsVo> pagevo = postsMapper.selectVoPage(pageQuery.buildMybatisPage(), pLqw);
-        // 配置用户的头像
-        if (pagevo.getRecords() == null || pagevo.getRecords().isEmpty()) {
-            return pagevo;
-        }
+        combinePostData(pagevo.getRecords());
+        return pagevo;
+    }
 
-        List<Long> userIds = pagevo.getRecords().stream().map(PostsVo::getUserId).toList();
+    @Override
+    public void combinePostData(List<PostsVo> postsVos){
+        // 配置用户的头像
+        if (postsVos == null || postsVos.isEmpty()) {
+            return ;
+        }
+        List<Long> userIds = postsVos.stream().map(PostsVo::getUserId).toList();
         LambdaQueryWrapper<User> uLqw = Wrappers.lambdaQuery();
         uLqw.in(User::getId, userIds)
                 .select(User::getId, User::getAvatar, User::getUsername, User::getNickname);
         Map<Long, UserVo> userMap = userMapper.selectVoList(uLqw).stream().collect(Collectors.toMap(UserVo::getId, Function.identity()));
-        // 组装阅读量、收藏量、评论数、以及设置阅读数
-        // 1. 获取收藏量和点赞量
-        List<Long> list = pagevo.getRecords().stream().map(PostsVo::getId).toList();
+        List<Long> list = postsVos.stream().map(PostsVo::getId).toList();
         LambdaQueryWrapper<Favorite> fLqw = Wrappers.lambdaQuery();
         fLqw.in(Favorite::getTargetId, list)
                 .eq(Favorite::getType, FavoriteConstant.FAVORITE_POST)
@@ -192,19 +195,19 @@ public class PostsServiceImpl implements PostsService {
         Map<Long, Long> commentCountMap = commentVos.stream().collect(Collectors.groupingBy(CommentVo::getPostId, Collectors.counting()));
         // 获取手机品牌和手机类型
         LambdaQueryWrapper<Brand> bLqw = Wrappers.lambdaQuery();
-        List<Long> brandIds = pagevo.getRecords().stream().map(PostsVo::getBrandId).toList();
+        List<Long> brandIds = postsVos.stream().map(PostsVo::getBrandId).toList();
         bLqw.in(Brand::getId, brandIds)
                 .select(Brand::getId, Brand::getName);
         List<BrandVo> brandVos = brandMapper.selectVoList(bLqw);
         Map<Long, BrandVo> brandMap = brandVos.stream().collect(Collectors.toMap(BrandVo::getId, Function.identity()));
-        List<Long> phoneModelIds = pagevo.getRecords().stream().map(PostsVo::getPhoneModelId).toList();
+        List<Long> phoneModelIds = postsVos.stream().map(PostsVo::getPhoneModelId).toList();
         LambdaQueryWrapper<PhoneModel> pmLqw = Wrappers.lambdaQuery();
         pmLqw.in(PhoneModel::getId, phoneModelIds)
                 .select(PhoneModel::getId, PhoneModel::getName);
         List<PhoneModelVo> phoneModelVos = phoneModelMapper.selectVoList(pmLqw);
         Map<Long, PhoneModelVo> phoneModelMap = phoneModelVos.stream().collect(Collectors.toMap(PhoneModelVo::getId, Function.identity()));
         TokenInfo tokenInfo = UserInfoThreadLocal.get();
-        pagevo.getRecords().forEach(vo -> {
+        postsVos.forEach(vo -> {
             // 分割图片
             if (StringUtils.isNotBlank(vo.getImages())) {
                 vo.setFileList(new ArrayList<>(List.of(vo.getImages().split(","))));
@@ -228,7 +231,6 @@ public class PostsServiceImpl implements PostsService {
                 vo.setIsLiked(favoriteVos.stream().anyMatch(item -> item.getType().equals(FavoriteConstant.LIKE_POST) && item.getTargetId().equals(vo.getId()) && item.getUserId().equals(tokenInfo.getUserId())));
             }
         });
-        return pagevo;
     }
 
     @Override

@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -28,6 +28,14 @@ application:
     path: D:/GraduationDesign/phone_review/images/
   url:
     prefix: http://localhost:8080/images/
+
+logging:
+  level:
+    com:
+      svwh:
+        phonereview:
+          mapper: debug
+
 # 配置邮件发送账号
 mail-service:
   mail-infos:

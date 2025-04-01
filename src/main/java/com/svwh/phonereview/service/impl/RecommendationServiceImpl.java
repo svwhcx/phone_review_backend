@@ -77,13 +77,13 @@ public class RecommendationServiceImpl implements RecommendationService {
         // 获取用户交互次数，判断是否为冷启动用户
         Long interactionCount = getUserInteractionCount(userId);
         log.info("User {} has {} interactions", userId, interactionCount);
-        
+
         // 如果用户交互次数少于冷启动阈值，则返回热门推荐
         if (interactionCount < algorithmConfig.getColdStartThreshold()) {
-            log.info("Cold start user detected (interactions: {} < threshold: {}), using popular posts", 
+            log.info("Cold start user detected (interactions: {} < threshold: {}), using popular posts",
                     interactionCount, algorithmConfig.getColdStartThreshold());
             RecommendationDTO popularResult = getPopularPosts(page, pageSize);
-            log.info("Returning {} popular posts for cold start user", 
+            log.info("Returning {} popular posts for cold start user",
                     popularResult.getPosts() != null ? popularResult.getPosts().size() : 0);
             return popularResult;
         }
@@ -91,24 +91,24 @@ public class RecommendationServiceImpl implements RecommendationService {
         // 使用混合推荐算法
         log.info("Using hybrid recommendation algorithm for user: {}", userId);
         RecommendationDTO userBasedResult = userBasedRecommendation(userId, page, pageSize);
-        log.info("User-based recommendation returned {} posts", 
+        log.info("User-based recommendation returned {} posts",
                 userBasedResult.getPosts() != null ? userBasedResult.getPosts().size() : 0);
-        
+
         RecommendationDTO itemBasedResult = itemBasedRecommendation(userId, page, pageSize);
-        log.info("Item-based recommendation returned {} posts", 
+        log.info("Item-based recommendation returned {} posts",
                 itemBasedResult.getPosts() != null ? itemBasedResult.getPosts().size() : 0);
-        
+
         // 合并用户和物品两种推荐结果
         RecommendationDTO result = combineRecommendations(userBasedResult, itemBasedResult, userId, page, pageSize);
-        log.info("Combined recommendation returned {} posts", 
+        log.info("Combined recommendation returned {} posts",
                 result.getPosts() != null ? result.getPosts().size() : 0);
-        
+
         // 如果合并后的结果为空，则返回热门推荐和最新评测的混合结果作为后备
         if (result.getPosts() == null || result.getPosts().isEmpty()) {
             log.warn("Combined recommendation is empty, falling back to mixed popular and latest posts");
             return getMixedPopularAndLatestPosts(page, pageSize);
         }
-        
+
         // 记录推荐日志
 //        if (result.getPosts() != null && !result.getPosts().isEmpty()) {
 //            recordRecommendations(userId, result.getPosts(), MIXED);
@@ -255,7 +255,8 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         // 获取热门文章列表
         List<PostsVo> popularPosts = getPopularPostsFromService(page, pageSize);
-        
+        postsService.combinePostData(popularPosts);
+
         // 获取实际总数，而不是估算值
         // 由于PostsService没有直接提供count方法，我们通过查询一次大页码的数据来获取总数
         PostsBo countBo = new PostsBo();
@@ -266,7 +267,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         PageVo<PostsVo> countResult = postsService.queryPage(countBo, countQuery);
         long actualTotal = countResult.getTotal(); // PageVo中的total字段包含了总记录数
         log.info("Actual total count of popular posts: {}", actualTotal);
-        
+
         // 构建推荐结果
         RecommendationDTO result = new RecommendationDTO();
         result.setPage(page);
@@ -424,7 +425,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         int toIndex = Math.min(fromIndex + pageSize, sortedEntries.size());
         
         if (fromIndex >= sortedEntries.size()) {
-            log.warn("Page index out of range for {} algorithm (page: {}, total entries: {}), falling back to mixed popular and latest posts", 
+            log.warn("Page index out of range for {} algorithm (page: {}, total entries: {}), falling back to mixed popular and latest posts",
                     MIXED, page, sortedEntries.size());
             return getMixedPopularAndLatestPosts(page, pageSize);
         }
@@ -477,7 +478,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         int toIndex = Math.min(fromIndex + pageSize, sortedEntries.size());
         
         if (fromIndex >= sortedEntries.size()) {
-            log.warn("Page index out of range for {} algorithm (page: {}, total entries: {}), falling back to mixed popular and latest posts", 
+            log.warn("Page index out of range for {} algorithm (page: {}, total entries: {}), falling back to mixed popular and latest posts",
                     algorithmType, page, sortedEntries.size());
             return getMixedPopularAndLatestPosts(page, pageSize);
         }
@@ -496,7 +497,7 @@ public class RecommendationServiceImpl implements RecommendationService {
             log.warn("Failed to fetch any posts for {} algorithm, falling back to mixed popular and latest posts", algorithmType);
             return getMixedPopularAndLatestPosts(page, pageSize);
         }
-        
+
         // 构建推荐结果
         return new RecommendationDTO()
                 .setPage(page)
@@ -565,12 +566,12 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         // 调用辅助方法获取文章
         List<PostsVo> result = getPostsByIds(postIds);
-        
+
         // 如果没有成功获取任何文章，记录警告
         if (result.isEmpty()) {
             log.warn("Failed to fetch any valid posts from IDs: {}", postIds);
         }
-        
+
         return result;
     }
 
@@ -601,13 +602,13 @@ public class RecommendationServiceImpl implements RecommendationService {
     public PageVo<PostsVo> getPersonalizedRecommendations(Long userId, int page, int pageSize) {
         log.info("Getting personalized recommendations with pagination for user: {}, page: {}, size: {}", userId, page, pageSize);
         RecommendationDTO recommendationDTO = recommendForUser(userId, page, pageSize);
-        
+
         // 确保返回的分页信息正确
         if (recommendationDTO.getPosts() == null || recommendationDTO.getPosts().isEmpty()) {
             log.warn("No personalized recommendations found for user: {}", userId);
             return new PageVo<>((long)page, 0L, Collections.emptyList());
         }
-        
+
         return new PageVo<>((long)page, recommendationDTO.getTotal(), recommendationDTO.getPosts());
     }
 
@@ -615,13 +616,13 @@ public class RecommendationServiceImpl implements RecommendationService {
     public PageVo<PostsVo> getPopularRecommendations(int page, int pageSize) {
         log.info("Getting popular recommendations with pagination, page: {}, size: {}", page, pageSize);
         RecommendationDTO recommendationDTO = getPopularPosts(page, pageSize);
-        
+
         // 确保返回的分页信息正确
         if (recommendationDTO.getPosts() == null || recommendationDTO.getPosts().isEmpty()) {
             log.warn("No popular recommendations found");
             return new PageVo<>((long)page, 0L, Collections.emptyList());
         }
-        
+
         // 使用实际的总数，而不是估算值
         long total = recommendationDTO.getTotal();
         log.info("Returning {} popular recommendations, total: {}", recommendationDTO.getPosts().size(), total);
@@ -643,7 +644,7 @@ public class RecommendationServiceImpl implements RecommendationService {
             log.warn("No similar posts found for postId: {}", postId);
             return new PageVo<>((long)page, 0L, Collections.emptyList());
         }
-        
+
         log.info("Returning {} similar posts for postId: {}", recommendationDTO.getPosts().size(), postId);
         return new PageVo<>((long)page, recommendationDTO.getTotal(), recommendationDTO.getPosts());
     }
@@ -653,13 +654,13 @@ public class RecommendationServiceImpl implements RecommendationService {
         log.info("Getting latest recommendations with pagination, page: {}, size: {}", page, pageSize);
         // 获取最新文章
         List<PostsVo> latestPosts = getLatestPostsFromService(page, pageSize);
-        
+
         // 确保返回的分页信息正确
         if (latestPosts == null || latestPosts.isEmpty()) {
             log.warn("No latest recommendations found");
             return new PageVo<>((long)page, 0L, Collections.emptyList());
         }
-        
+
         // 获取实际总数，而不是估算值
         PageQuery countQuery = new PageQuery();
         countQuery.setPageNum(1);
@@ -668,7 +669,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         countBo.setSortBy("create_time DESC");
         PageVo<PostsVo> countResult = postsService.queryPage(countBo, countQuery);
         long actualTotal = countResult.getTotal(); // PageVo中的total字段包含了总记录数
-        
+
         log.info("Returning {} latest recommendations, total: {}", latestPosts.size(), actualTotal);
         return new PageVo<>((long)page, actualTotal, latestPosts);
     }
@@ -678,13 +679,13 @@ public class RecommendationServiceImpl implements RecommendationService {
         log.info("Getting anonymous recommendations with pagination, page: {}, size: {}", page, pageSize);
         // 匿名用户就给热门推荐
         PageVo<PostsVo> result = getPopularRecommendations(page, pageSize);
-        
+
         // 确保返回的分页信息正确
         if (result.getRecords() == null || result.getRecords().isEmpty()) {
             log.warn("No anonymous recommendations found");
             return new PageVo<>((long)page, 0L, Collections.emptyList());
         }
-        
+
         log.info("Returning {} anonymous recommendations", result.getRecords().size());
         return result;
     }
@@ -814,41 +815,41 @@ public class RecommendationServiceImpl implements RecommendationService {
         // 实际项目中应根据实际情况实现
         return 0.8;
     }
-    
+
     /**
      * 获取热门推荐和最新评测的混合结果
-     * 
+     *
      * @param page 页码
      * @param pageSize 每页数量
      * @return 混合推荐结果
      */
     private RecommendationDTO getMixedPopularAndLatestPosts(int page, int pageSize) {
         log.info("Getting mixed popular and latest posts, page: {}, size: {}", page, pageSize);
-        
+
         // 计算每种类型应获取的数量（各占一半）
         int halfSize = pageSize / 2;
         int popularSize = halfSize;
         int latestSize = pageSize - popularSize; // 处理奇数情况
-        
+
         // 获取热门文章
         List<PostsVo> popularPosts = getPopularPostsFromService(page, popularSize);
         log.info("Retrieved {} popular posts", popularPosts.size());
-        
+
         // 获取最新文章
         List<PostsVo> latestPosts = getLatestPostsFromService(page, latestSize);
         log.info("Retrieved {} latest posts", latestPosts.size());
-        
+
         // 合并两种结果，并去重
         Set<Long> addedPostIds = new HashSet<>();
         List<PostsVo> mixedPosts = new ArrayList<>();
-        
+
         // 交替添加热门和最新文章
         int popularIndex = 0;
         int latestIndex = 0;
-        
-        while (mixedPosts.size() < pageSize && 
+
+        while (mixedPosts.size() < pageSize &&
                (popularIndex < popularPosts.size() || latestIndex < latestPosts.size())) {
-            
+
             // 添加热门文章
             if (popularIndex < popularPosts.size()) {
                 PostsVo popularPost = popularPosts.get(popularIndex++);
@@ -857,12 +858,12 @@ public class RecommendationServiceImpl implements RecommendationService {
                     addedPostIds.add(popularPost.getId());
                 }
             }
-            
+
             // 如果已经达到页面大小，退出循环
             if (mixedPosts.size() >= pageSize) {
                 break;
             }
-            
+
             // 添加最新文章
             if (latestIndex < latestPosts.size()) {
                 PostsVo latestPost = latestPosts.get(latestIndex++);
@@ -872,7 +873,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 }
             }
         }
-        
+
         // 如果混合结果不足，尝试添加更多热门或最新文章
         if (mixedPosts.size() < pageSize) {
             // 继续添加热门文章
@@ -883,7 +884,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                     addedPostIds.add(popularPost.getId());
                 }
             }
-            
+
             // 继续添加最新文章
             while (latestIndex < latestPosts.size() && mixedPosts.size() < pageSize) {
                 PostsVo latestPost = latestPosts.get(latestIndex++);
@@ -893,7 +894,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 }
             }
         }
-        
+
         // 获取实际总数（热门+最新的总数，去重后）
         PostsBo popularCountBo = new PostsBo();
         popularCountBo.setSortBy("view_count DESC, like_count DESC");
@@ -901,18 +902,18 @@ public class RecommendationServiceImpl implements RecommendationService {
         popularCountQuery.setPageNum(1);
         popularCountQuery.setPageSize(1);
         PageVo<PostsVo> popularCountResult = postsService.queryPage(popularCountBo, popularCountQuery);
-        
+
         PostsBo latestCountBo = new PostsBo();
         latestCountBo.setSortBy("create_time DESC");
         PageQuery latestCountQuery = new PageQuery();
         latestCountQuery.setPageNum(1);
         latestCountQuery.setPageSize(1);
         PageVo<PostsVo> latestCountResult = postsService.queryPage(latestCountBo, latestCountQuery);
-        
+
         // 估算总数（实际上可能有重复，但这里简化处理）
         long estimatedTotal = popularCountResult.getTotal() + latestCountResult.getTotal();
         log.info("Estimated total count of mixed posts: {}", estimatedTotal);
-        
+
         // 构建推荐结果
         RecommendationDTO result = new RecommendationDTO();
         result.setPage(page);
@@ -921,7 +922,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         result.setTotalPages((int) Math.ceil((double) result.getTotal() / pageSize));
         result.setPosts(mixedPosts);
         result.setAlgorithmType("MIXED_POPULAR_LATEST");
-        
+
         return result;
     }
 }
