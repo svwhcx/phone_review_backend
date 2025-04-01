@@ -124,7 +124,7 @@ public class PostsBo {
     /**
      * 排序字段，例如：create_time DESC
      */
-    private String orderBy;
+    private String sortBy;
 
     private List<String> fileList;
 }

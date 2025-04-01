@@ -23,6 +23,7 @@ import com.svwh.phonereview.service.PostsService;
 import com.svwh.phonereview.service.RecommendationService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
+@Slf4j
 public class PostsController {
 
     private final PostsService postsService;
@@ -55,28 +57,29 @@ public class PostsController {
         return postsService.queryPage(bo,pageQuery);
     }
 
-    /**
-     * 获取推荐列表(旧方法，已弃用，保留向后兼容)
-     * @param pageQuery
-     * @return
-     */
-  /*  @GetMapping("/recommend")
-    @IgnoreAuth
-    public PageVo<PostsVo> getRecommendList(PageQuery pageQuery){
-        return postsService.getRecommendList(pageQuery);
-    }*/
+
     
     /**
      * 获取个性化推荐文章
      * 根据用户历史行为生成个性化推荐
+     * 未登录用户将获得匿名推荐
      * @param pageQuery 分页参数
      * @return 个性化推荐的文章列表
      */
     @GetMapping("/recommend")
+    @IgnoreAuth
     public PageVo<PostsVo> getPersonalizedRecommendations(RecommendQuery pageQuery) {
-        TokenInfo tokenInfo = UserInfoThreadLocal.get();
-        Long userId = tokenInfo.getUserId();
-        return recommendationService.getPersonalizedRecommendations(userId, pageQuery.getPage(), pageQuery.getLimit());
+        Long userId = null;
+        try {
+            TokenInfo tokenInfo = UserInfoThreadLocal.get();
+            userId = tokenInfo.getUserId();
+            log.info("Getting personalized recommendations for user: {}", userId);
+            return recommendationService.getPersonalizedRecommendations(userId, pageQuery.getPage(), pageQuery.getLimit());
+        } catch (Exception e) {
+            // 用户未登录，使用匿名推荐
+            log.info("User not logged in, using anonymous recommendations");
+            return recommendationService.getAnonymousRecommendations(pageQuery.getPage(), pageQuery.getLimit());
+        }
     }
 
     
@@ -337,5 +340,9 @@ public class PostsController {
         CommentBo bo = new CommentBo();
         bo.setPostId(postId);
         return commentService.listComments(postId,pageQuery);
+    }
+    @DeleteMapping("/admin/{postId}")
+    public void deletePost(@PathVariable Long postId){
+        postsService.delete(postId);
     }
 }

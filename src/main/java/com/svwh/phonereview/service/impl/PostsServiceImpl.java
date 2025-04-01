@@ -150,8 +150,14 @@ public class PostsServiceImpl implements PostsService {
     @Override
     public PageVo<PostsVo> queryPage(PostsBo bo, PageQuery pageQuery) {
         LambdaQueryWrapper<Posts> pLqw = Wrappers.lambdaQuery();
-        pLqw.eq(Posts::getStatus, PostsConstant.APPROVED)
-                .orderByDesc(Posts::getCreateTime);
+        if(StringUtils.isNotBlank(bo.getSortBy())&&"views".equals(bo.getSortBy())){
+            pLqw.eq(Posts::getStatus, PostsConstant.APPROVED)
+                    .orderByDesc(Posts::getViews);
+        }else {
+            pLqw.eq(Posts::getStatus, PostsConstant.APPROVED)
+                    .orderByDesc(Posts::getCreateTime);
+        }
+
         if (bo.getBrandId() != null){
             pLqw.eq(Posts::getBrandId, bo.getBrandId());
         }
@@ -415,6 +421,10 @@ public class PostsServiceImpl implements PostsService {
      * @param postsId
      */
     private void valid(Long postsId) {
+        String role = UserInfoThreadLocal.get().getRole();
+        if("admin".equals(role)){
+            return;
+        }
         Long userId = UserInfoThreadLocal.get().getUserId();
         Posts posts = postsMapper.selectById(postsId);
         if (posts == null || !posts.getUserId().equals(userId)) {
@@ -422,7 +432,5 @@ public class PostsServiceImpl implements PostsService {
         }
     }
 
-//    private List<PostsVo> combinePosts( List<Long> postIds) {
-//        List<
-//    }
+
 }
