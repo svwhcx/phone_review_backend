@@ -249,6 +249,8 @@ public class PostsServiceImpl implements PostsService {
     @Override
     public void update(PostsBo bo) {
         valid(bo.getId());
+        // 处理图片的拼接
+        bo.setImages(String.join(",", bo.getFileList()));
         postsMapper.updateById(MapstructUtils.convert(bo, Posts.class));
     }
 
