@@ -4,11 +4,7 @@ package com.svwh.phonereview.auth.token;
 
 import java.util.HashMap;
 
-/**
- * @description 构建Token
- * @Author cxk
- * @Date 2022/4/30 17:39
- */
+
 public class TokenBuilder {
 
 

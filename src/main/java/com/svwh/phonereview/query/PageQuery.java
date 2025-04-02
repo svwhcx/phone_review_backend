@@ -3,11 +3,7 @@ package com.svwh.phonereview.query;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/24 21:29
- */
+
 public class PageQuery {
 
     private Integer pageNum;

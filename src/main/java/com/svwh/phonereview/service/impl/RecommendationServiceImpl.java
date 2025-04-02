@@ -77,7 +77,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         // 获取用户交互次数，判断是否为冷启动用户
         Long interactionCount = getUserInteractionCount(userId);
         log.info("User {} has {} interactions", userId, interactionCount);
-
+        
         // 如果用户交互次数少于冷启动阈值，则返回热门推荐
         if (interactionCount < algorithmConfig.getColdStartThreshold()) {
             log.info("Cold start user detected (interactions: {} < threshold: {}), using popular posts",
@@ -97,7 +97,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         RecommendationDTO itemBasedResult = itemBasedRecommendation(userId, page, pageSize);
         log.info("Item-based recommendation returned {} posts",
                 itemBasedResult.getPosts() != null ? itemBasedResult.getPosts().size() : 0);
-
+        
         // 合并用户和物品两种推荐结果
         RecommendationDTO result = combineRecommendations(userBasedResult, itemBasedResult, userId, page, pageSize);
         log.info("Combined recommendation returned {} posts",
@@ -285,9 +285,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         try {
             if (userId == null || userId <= 0 || postId == null || postId <= 0) {
                 log.warn("Invalid parameters for recording interaction: userId={}, postId={}", userId, postId);
-                return false;
-            }
-            
+            return false;
+        }
+        
             // 查找最近的推荐记录
             RecommendationLog log = recommendationLogMapper.findByUserIdAndItemId(userId, postId);
             
@@ -332,7 +332,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Override
     public String triggerSimilarityCalculation() {
         try {
-            log.info("Manually triggering similarity calculation");
+        log.info("Manually triggering similarity calculation");
             
             // 计算物品相似度
             int itemCount = similarityService.calculateAllItemSimilarities(POST_ITEM_TYPE);
@@ -925,4 +925,4 @@ public class RecommendationServiceImpl implements RecommendationService {
 
         return result;
     }
-}
+} 

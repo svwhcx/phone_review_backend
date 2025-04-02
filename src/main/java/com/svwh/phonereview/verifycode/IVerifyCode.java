@@ -1,12 +1,7 @@
 package com.svwh.phonereview.verifycode;
 
 
-/**
- * @description 这里是验证码服务<p>
- * 提供的验证码服务包括，图片验证码、手机验证码、邮箱验证码
- * @Author cxk
- * @Date 2025/2/27 9:26
- */
+
 public interface IVerifyCode {
 
     /**

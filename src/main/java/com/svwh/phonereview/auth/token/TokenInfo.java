@@ -3,11 +3,6 @@ package com.svwh.phonereview.auth.token;
 import lombok.Data;
 import lombok.ToString;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/25 17:49
- */
 @ToString
 @Data
 public class TokenInfo {

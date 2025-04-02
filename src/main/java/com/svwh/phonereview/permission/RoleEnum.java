@@ -1,10 +1,6 @@
 package com.svwh.phonereview.permission;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/25 13:37
- */
+
 public enum RoleEnum {
 
 

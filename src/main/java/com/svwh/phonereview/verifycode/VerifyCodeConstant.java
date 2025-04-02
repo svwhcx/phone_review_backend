@@ -1,10 +1,6 @@
 package com.svwh.phonereview.verifycode;
 
-/**
- * @description
- * @Author cxk
- * @Date 2022/5/3 14:42
- */
+
 public class VerifyCodeConstant {
 
     /**

@@ -8,11 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
-/**
- * @description Token工具类
- * @Author cxk
- * @Date 2022/4/30 16:42
- */
+
 public class TokenUtil {
 
     private static final String TOKEN_PREFIX = "Bearer ";

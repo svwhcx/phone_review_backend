@@ -9,11 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/24 19:56
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

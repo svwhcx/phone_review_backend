@@ -6,13 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 本地token管理
- *
- * @description
- * @Author cxk
- * @Date 2025/2/24 15:53
- */
+
 @Component
 public class LocalTokenService extends BasicTokenService {
 

@@ -10,11 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * @description 负责验证码系统上下文的获取操作。
- * @Author cxk
- * @Date 2025/3/8 10:06
- */
+
 @Component
 public class VerifyCodeContext {
 

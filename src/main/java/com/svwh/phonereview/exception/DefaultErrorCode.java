@@ -1,10 +1,6 @@
 package com.svwh.phonereview.exception;
 
-/**
- * @description 提供的常见的默认的状态码
- * @Author cxk
- * @Date 2025/3/14 16:56
- */
+
 public enum DefaultErrorCode implements IErrorCode{
 
 

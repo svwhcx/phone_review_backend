@@ -14,11 +14,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/2/27 9:30
- */
+
 @Component("emailVerifyCode")
 public class EmailVerifyCode implements IVerifyCode{
 

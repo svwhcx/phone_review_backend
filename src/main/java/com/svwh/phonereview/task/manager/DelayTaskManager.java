@@ -16,11 +16,6 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @description 定时任务执行
- * @Author cxk
- * @Date 2025/3/30 16:40
- */
 
 @Component
 public class DelayTaskManager implements ITaskManager {

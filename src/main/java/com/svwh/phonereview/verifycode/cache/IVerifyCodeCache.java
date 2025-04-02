@@ -3,11 +3,7 @@ package com.svwh.phonereview.verifycode.cache;
 
 import com.svwh.phonereview.verifycode.VerifyCodeRequest;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/8 11:55
- */
+
 public interface IVerifyCodeCache {
 
 

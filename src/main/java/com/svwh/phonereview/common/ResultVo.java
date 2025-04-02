@@ -2,11 +2,7 @@ package com.svwh.phonereview.common;
 
 import java.io.Serializable;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/14 14:36
- */
+
 public class ResultVo<T> implements Serializable {
 
     private Integer code;

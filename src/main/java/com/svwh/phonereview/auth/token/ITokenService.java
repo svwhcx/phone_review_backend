@@ -1,11 +1,7 @@
 package com.svwh.phonereview.auth.token;
 
 
-/**
- * @description Token管理、根据用户信息分发、验证Token是否有效、强制用户下线操作。
- * @Author cxk
- * @Date 2025/2/24 15:50
- */
+
 public interface ITokenService {
 
     /**

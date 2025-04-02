@@ -4,11 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/24 22:27
- */
+
 public class PageVo<T> {
 
 

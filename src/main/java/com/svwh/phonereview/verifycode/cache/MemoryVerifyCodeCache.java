@@ -11,11 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/8 11:37
- */
+
 @Primary
 @Component("memoryVerifyCodeCache")
 public class MemoryVerifyCodeCache implements IVerifyCodeCache {

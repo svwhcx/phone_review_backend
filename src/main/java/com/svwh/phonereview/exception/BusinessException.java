@@ -1,10 +1,6 @@
 package com.svwh.phonereview.exception;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/14 14:42
- */
+
 public class BusinessException extends RuntimeException{
 
     /**

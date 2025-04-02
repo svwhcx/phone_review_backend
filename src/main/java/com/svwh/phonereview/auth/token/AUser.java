@@ -1,10 +1,6 @@
 package com.svwh.phonereview.auth.token;
 
-/**
- * @description 认证模块提供的用户信息
- * @Author cxk
- * @Date 2025/3/25 14:00
- */
+
 public class AUser {
 
     private Long id;

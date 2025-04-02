@@ -7,11 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * @description
- * @Author cxk
- * @Date 2024/5/22 21:54
- */
+
 public class FileUtil {
 
 

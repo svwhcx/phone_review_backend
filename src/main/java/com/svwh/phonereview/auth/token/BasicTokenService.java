@@ -1,10 +1,6 @@
 package com.svwh.phonereview.auth.token;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/2/24 16:26
- */
+
 public abstract class BasicTokenService implements ITokenService {
 
 

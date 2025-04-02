@@ -1,10 +1,6 @@
 package com.svwh.phonereview.exception;
 
-/**
- * @description 异常状态码顶层接口
- * @author cxk
- * @Date 2025/3/14 14:43
- */
+
 public interface IErrorCode {
 
     /**

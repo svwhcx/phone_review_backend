@@ -10,11 +10,7 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * @description 跨域配置
- * @Author cxk
- * @Date 2022/4/30 16:24
- */
+
 @Configuration
 @ConfigurationProperties
 public class CorsConfig implements WebMvcConfigurer {

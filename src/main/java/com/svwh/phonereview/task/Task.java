@@ -2,11 +2,7 @@ package com.svwh.phonereview.task;
 
 import lombok.*;
 
-/**
- * @description
- * @Author cxk
- * @Date 2025/3/30 16:25
- */
+
 @Getter
 @Setter
 @NoArgsConstructor

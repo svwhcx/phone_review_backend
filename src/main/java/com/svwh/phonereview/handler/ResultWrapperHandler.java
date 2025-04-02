@@ -13,11 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 
-/**
- * @description Http请求结果返回统一处理
- * @Author cxk
- * @Date 2025/3/14 14:30
- */
+
 @RestControllerAdvice
 public class ResultWrapperHandler implements ResponseBodyAdvice<Object> {
 
